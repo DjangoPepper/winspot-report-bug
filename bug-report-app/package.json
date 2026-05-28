@@ -1,9 +1,9 @@
 {
-  "name": "bug-report-app",
+  "name": "winspot-report-bug",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://djangopepper.github.io/bug-report-app/",
+  "homepage": "https://djangopepper.github.io/winspot-report-bug/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

@@ -1,5 +1,70 @@
 import React, { useState, useEffect } from 'react';
 
+// GitHub synchronization
+const GITHUB_TOKEN = (import.meta as any).env.VITE_GITHUB_TOKEN || '';
+const GITHUB_REPO = (import.meta as any).env.VITE_GITHUB_REPO || 'DjangoPepper/winspot-report-bug';
+
+async function saveToGitHub(reports: BugReport[]): Promise<boolean> {
+  if (!GITHUB_TOKEN) {
+    console.warn('GitHub token not configured');
+    return false;
+  }
+
+  try {
+    const content = btoa(JSON.stringify(reports, null, 2));
+    let sha: string | undefined;
+
+    // Get current file SHA if it exists
+    try {
+      const getResponse = await fetch(
+        `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`,
+        {
+          headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        }
+      );
+      if (getResponse.ok) {
+        const data = await getResponse.json();
+        sha = data.sha;
+      }
+    } catch (err) {
+      console.log('File does not exist yet, will create it');
+    }
+
+    // Upload/update file
+    const response = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+          message: `Update bug reports - ${new Date().toLocaleString('fr-FR')}`,
+          content: content,
+          sha: sha,
+          branch: 'main'
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error('GitHub sync failed:', await response.text());
+      return false;
+    }
+
+    console.log('Successfully synced to GitHub');
+    return true;
+  } catch (err) {
+    console.error('GitHub sync error:', err);
+    return false;
+  }
+}
+
 interface BugReport {
   id: string;
   timestamp: string;
@@ -31,6 +96,8 @@ const BugReportApp: React.FC = () => {
   const [view, setView] = useState<'form' | 'list'>('list');
   const [username, setUsername] = useState('');
   const [usernameSaved, setUsernameSaved] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [syncMessage, setSyncMessage] = useState('');
   const [formData, setFormData] = useState<Partial<BugReport>>({
     chantier: 'Déchargement',
     transporteur: 'Camion',
@@ -59,9 +126,25 @@ const BugReportApp: React.FC = () => {
     }
   }, []);
 
-  // Save to localStorage
+  // Save to localStorage and GitHub
   useEffect(() => {
     localStorage.setItem('bugReports', JSON.stringify(reports));
+    
+    // Sync to GitHub if token is configured
+    if (GITHUB_TOKEN && reports.length > 0) {
+      setSyncStatus('syncing');
+      saveToGitHub(reports).then(success => {
+        if (success) {
+          setSyncStatus('success');
+          setSyncMessage('Synchronisé avec GitHub ✓');
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        } else {
+          setSyncStatus('error');
+          setSyncMessage('Erreur de synchronisation');
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        }
+      });
+    }
   }, [reports]);
 
   const handleUsernameChange = (newUsername: string) => {
@@ -201,6 +284,22 @@ const BugReportApp: React.FC = () => {
           >
             Changer
           </button>
+        </div>
+      )}
+
+      {/* Sync Status */}
+      {syncStatus !== 'idle' && (
+        <div style={{
+          backgroundColor: syncStatus === 'success' ? '#d4edda' : syncStatus === 'error' ? '#f8d7da' : '#fff3cd',
+          color: syncStatus === 'success' ? '#155724' : syncStatus === 'error' ? '#721c24' : '#856404',
+          padding: '10px 20px',
+          textAlign: 'center',
+          fontSize: '12px',
+          fontWeight: '500'
+        }}>
+          {syncStatus === 'syncing' && '⏳ Synchronisation en cours...'}
+          {syncStatus === 'success' && '✓ ' + syncMessage}
+          {syncStatus === 'error' && '✗ ' + syncMessage}
         </div>
       )}
 
