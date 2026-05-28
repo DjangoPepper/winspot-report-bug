@@ -43,8 +43,8 @@ Application web React/TypeScript pour gérer les déclarations de bugs de l'inte
 
 ```bash
 # Sur votre PC
-git clone https://github.com/yourusername/bug-report-repo.git
-cd bug-report-repo
+git clone https://github.com/DjangoPepper/winspot-report-bug.git
+cd winspot-report-bug
 ```
 
 ### 2. Structure des fichiers
@@ -52,7 +52,7 @@ cd bug-report-repo
 Créez cette structure dans votre repo :
 
 ```.
-bug-report-repo/
+winspot-report-bug/
 ├── src/
 │   ├── BugReportApp.tsx      (le composant principal)
 │   └── main.tsx
@@ -92,7 +92,7 @@ Cela crée une version optimisée et la déploie sur GitHub Pages.
 1. Allez dans les **Settings** de votre repo GitHub
 2. Allez dans **Pages** (section sur la gauche)
 3. Sélectionnez **Branch: gh-pages** comme source
-4. L'application sera disponible à : `https://yourusername.github.io/bug-report-repo/`
+4. L'application sera disponible à : `https://djangopepper.github.io/winspot-report-bug/`
 
 ## 💾 Stockage des données
 
@@ -108,7 +108,7 @@ Pour synchroniser les données avec GitHub, modifiez `BugReportApp.tsx` pour ajo
 // À la fin du fichier, ajouter :
 
 const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
-const GITHUB_REPO = 'yourusername/bug-report-repo';
+const GITHUB_REPO = 'DjangoPepper/winspot-report-bug';
 
 async function saveToGitHub(reports: BugReport[]) {
   const content = btoa(JSON.stringify(reports, null, 2));
