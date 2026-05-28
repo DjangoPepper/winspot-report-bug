@@ -15,12 +15,14 @@ Application web React/TypeScript pour gérer les déclarations de bugs de l'inte
 ## 📋 Champs de formulaire
 
 ### Informations de contexte
+
 - **Chantier** : Déchargement | Chargement | Embarquement (navire) | Débarquement (navire)
 - **Transporteur** : Camion | Navire | Train SNCF | Train Mardyck
 - **Lieu** : Escaut | F12 | F13
 - **Zone** : Parc | Entrepot
 
 ### Description du bug
+
 - Titre du bug
 - Module/Zone UI concernée
 - Description détaillée
@@ -30,6 +32,7 @@ Application web React/TypeScript pour gérer les déclarations de bugs de l'inte
 - Observations supplémentaires
 
 ### Classification
+
 - **Sévérité** : Critique (🔴) | Majeur (🟠) | Mineur (🟢)
 - **Fréquence** : À chaque fois | Souvent | Occasionnellement | Rare
 - **Affecte autres utilisateurs** : Oui | Non | Incertain
@@ -48,7 +51,7 @@ cd bug-report-repo
 
 Créez cette structure dans votre repo :
 
-```
+```.
 bug-report-repo/
 ├── src/
 │   ├── BugReportApp.tsx      (le composant principal)
@@ -94,6 +97,7 @@ Cela crée une version optimisée et la déploie sur GitHub Pages.
 ## 💾 Stockage des données
 
 ### Actuellement (localStorage)
+
 Les données sont stockées dans le **localStorage du navigateur**. Chaque appareil/navigateur a sa propre base de données.
 
 ### Option : Synchroniser avec GitHub (avancé)
@@ -128,7 +132,8 @@ async function saveToGitHub(reports: BugReport[]) {
 ```
 
 Puis créez un fichier `.env` :
-```
+
+```.
 REACT_APP_GITHUB_TOKEN=ghp_xxxxxxxxxxxxx
 ```
 
@@ -150,11 +155,13 @@ const db = getFirestore(app);
 ## 👥 Rôles utilisateurs
 
 ### Tous les utilisateurs
+
 - ✅ Soumettre des rapports de bugs
 - ✅ Consulter les rapports existants
 - ✅ Voir les détails de chaque rapport
 
 ### Administrateurs (mAx, ThO)
+
 - ✅ Tous les droits ci-dessus
 - ✅ **Clôturer les rapports** et les signer "support" ou "direction"
 - ✅ Voir les rapports clôturés
@@ -199,14 +206,17 @@ Cela crée des colonnes fluides qui s'ajustent à la taille de l'écran.
 ## 🐛 Dépannage
 
 ### Les données ne se sauvegardent pas
+
 - Vérifiez que le localStorage n'est pas désactivé dans le navigateur
 - Essayez dans un onglet privé/incognito
 
 ### L'application est lente
+
 - Videz le localStorage : `localStorage.clear()`
 - Cela supprimera tous les rapports locaux
 
 ### Erreur lors du déploiement
+
 ```bash
 npm install gh-pages --save-dev
 npm run deploy
@@ -215,6 +225,7 @@ npm run deploy
 ## 📞 Support
 
 Pour les questions techniques :
+
 1. Vérifiez la console du navigateur (F12)
 2. Regardez les erreurs dans le terminal
 3. Assurez-vous que Node.js est à jour : `node --version`

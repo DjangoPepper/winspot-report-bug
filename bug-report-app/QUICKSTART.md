@@ -26,7 +26,7 @@ git init
 
 ## Étape 2 : Structure des dossiers
 
-```
+```.
 bug-report-app/
 ├── src/
 │   ├── BugReportApp.tsx
@@ -46,24 +46,28 @@ bug-report-app/
 ## Étape 3 : Configuration locale
 
 ### Installer Node.js
-Téléchargez et installez depuis https://nodejs.org (version LTS)
+
+Téléchargez et installez depuis <https://nodejs.org> (version LTS)
 
 ### Installer les dépendances
+
 ```bash
 npm install
 ```
 
 ### Tester localement
+
 ```bash
 npm run dev
 ```
 
-Ouvrez http://localhost:5173 dans votre navigateur. Vous devriez voir l'application !
+Ouvrez <http://localhost:5173> dans votre navigateur. Vous devriez voir l'application !
 
 ## Étape 4 : Créer le repository GitHub
 
 ### 1. Créer un repo vide sur GitHub
-- Allez sur https://github.com/new
+
+- Allez sur <https://github.com/new>
 - Nom du repository : `bug-report-app`
 - Description : "Application de gestion de rapports de bugs"
 - **Ne pas initialiser avec README, .gitignore ou license**
@@ -110,34 +114,40 @@ git push
 
 ## Étape 6 : Configurer GitHub Pages
 
-### 1. Allez sur https://github.com/YOUR_USERNAME/bug-report-app/settings
+### 1. Allez sur <https://github.com/YOUR_USERNAME/bug-report-app/settings>
 
 ### 2. Cliquez sur "Pages" (à gauche)
 
 ### 3. Sous "Build and deployment"
-   - Sélectionnez "GitHub Actions" comme source
 
-### 4. L'application sera disponible à :
-   ```
+- Sélectionnez "GitHub Actions" comme source
+
+### 4. L'application sera disponible à
+
+   ```.
    https://YOUR_USERNAME.github.io/bug-report-app/
    ```
 
 ## Étape 7 : Utilisation de l'application
 
 ### Première visite
+
 1. Entrez votre prénom (Ex: mAx, ThO, Jean)
 2. Cliquez "Valider"
 
 ### Créer un rapport
+
 1. Cliquez "➕ Nouveau Rapport"
 2. Remplissez les champs (les * sont obligatoires)
 3. Cliquez "✓ Soumettre le rapport"
 
 ### Consulter les rapports
+
 1. Cliquez "📋 Liste des Rapports"
 2. Cliquez sur un rapport pour voir les détails
 
 ### Clôturer un rapport (admin seulement)
+
 - Si vous êtes "mAx" ou "ThO"
 - Cliquez sur un rapport ouvert
 - Sélectionnez "support" ou "direction"
@@ -146,17 +156,20 @@ git push
 ## ⚙️ Configuration personnalisée
 
 ### Changer le port (si 5173 est occupé)
+
 ```bash
 npm run dev -- --port 3000
 ```
 
 ### Nettoyer les données locales
+
 ```javascript
 // Dans la console du navigateur (F12)
 localStorage.clear()
 ```
 
 ### Exporter les données
+
 ```javascript
 // Dans la console du navigateur (F12)
 copy(localStorage.getItem('bugReports'))
@@ -165,19 +178,24 @@ copy(localStorage.getItem('bugReports'))
 ## 🚨 Problèmes courants
 
 ### "npm: command not found"
-→ Installez Node.js depuis https://nodejs.org
+
+→ Installez Node.js depuis <https://nodejs.org>
 
 ### "Port 5173 already in use"
+
 → Utilisez un autre port : `npm run dev -- --port 3000`
 
 ### Les données disparaissent après refresh
+
 → C'est normal en développement. En production, elles sont sauvegardées en localStorage.
 
 ### L'application affiche une page blanche sur GitHub Pages
+
 → Attendez quelques minutes après le premier déploiement
 → Videz le cache du navigateur (Ctrl+Shift+Delete)
 
 ### Build fails avec "404 not found"
+
 → Vérifiez que `vite.config.ts` contient le bon `base: '/bug-report-app/'`
 
 ## 📡 Synchroniser avec GitHub (optionnel)
@@ -215,7 +233,8 @@ git push
 **Vous êtes maintenant prêt !** 🎉
 
 Votre application est accessible à :
-```
+
+```.
 https://YOUR_USERNAME.github.io/bug-report-app/
 ```
 
