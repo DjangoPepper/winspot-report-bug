@@ -4,6 +4,7 @@ interface BugReport {
   id: string;
   timestamp: string;
   username: string;
+  interface: 'PC' | 'PdA';
   chantier: 'Déchargement' | 'Chargement' | 'Embarquement' | 'Débarquement';
   transporteur: 'Camion' | 'Navire' | 'Train SNCF' | 'Train Mardyck';
   lieu: 'Escaut' | 'F12' | 'F13';
@@ -35,6 +36,7 @@ const BugReportApp: React.FC = () => {
     transporteur: 'Camion',
     lieu: 'Escaut',
     zone: 'Parc',
+    interface: 'PC',
     severite: 'Majeur',
     frequence: 'Souvent',
     affecteAutres: 'Non',
@@ -80,6 +82,7 @@ const BugReportApp: React.FC = () => {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
       username: username,
+      interface: formData.interface as any,
       chantier: formData.chantier as any,
       transporteur: formData.transporteur as any,
       lieu: formData.lieu as any,
