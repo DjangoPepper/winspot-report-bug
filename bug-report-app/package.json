@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://yourusername.github.io/bug-report-repo/",
+  "homepage": "https://djangopepper.github.io/bug-report-app/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
