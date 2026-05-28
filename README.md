@@ -100,41 +100,7 @@ Cela crée une version optimisée et la déploie sur GitHub Pages.
 
 Les données sont stockées dans le **localStorage du navigateur**. Chaque appareil/navigateur a sa propre base de données.
 
-### Option : Synchroniser avec GitHub (avancé)
-
-Pour synchroniser les données avec GitHub, modifiez `BugReportApp.tsx` pour ajouter l'authentification GitHub API :
-
-```typescript
-// À la fin du fichier, ajouter :
-
-const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
-const GITHUB_REPO = 'DjangoPepper/winspot-report-bug';
-
-async function saveToGitHub(reports: BugReport[]) {
-  const content = btoa(JSON.stringify(reports, null, 2));
-  const response = await fetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`,
-    {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: 'Update bug reports',
-        content: content,
-        branch: 'main'
-      })
-    }
-  );
-  return response.json();
-}
-```
-
-Puis créez un fichier `.env` :
-
-```.
-REACT_APP_GITHUB_TOKEN=ghp_xxxxxxxxxxxxx
+ean
 ```
 
 ### Option : Utiliser une base de données cloud
