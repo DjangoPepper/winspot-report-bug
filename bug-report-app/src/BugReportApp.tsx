@@ -253,7 +253,7 @@ const BugReportApp: React.FC = () => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Ex: mAx, ThO, Jean..."
+            placeholder="Ex: freddy, jerem, romu..."
             style={{ padding: '8px 12px', border: '1px solid #ffc107', borderRadius: '4px', fontSize: '14px', flex: 1, minWidth: '150px' }}
           />
           <button
@@ -414,6 +414,21 @@ const BugReportApp: React.FC = () => {
                 placeholder="Résumé court du problème"
                 style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', boxSizing: 'border-box' }}
               />
+            </div>
+
+            {/* Interface */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>Interface *</label>
+              <select
+                value={formData.interface || ''}
+                onChange={(e) => setFormData({ ...formData, interface: e.target.value as any })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px' }}
+              >
+                <option value="">-- Sélectionner --</option>
+                <option value="PdA">PdA</option>
+                <option value="PC">PC</option>
+                <option value="Tablette">Tablette</option>
+              </select>
             </div>
 
             {/* Module UI */}
