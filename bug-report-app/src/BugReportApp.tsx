@@ -854,7 +854,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <h2 style={{ margin: '0', color: '#1F4788' }}>{selectedReport.titre}</h2>
                     <span style={{ backgroundColor: getStatusColor(selectedReport.status), color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-                      {selectedReport.status.toUpperCase()}
+                      {selectedReport.status?.toUpperCase()}
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: '10px' }}>

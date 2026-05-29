@@ -8,9 +8,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && npm run deploy:s3",
+    "deploy": "npm run build && npm run deploy:s3 && npm run deploy:invalidate",
     "deploy:gh": "npm run build && gh-pages -d dist",
-    "deploy:s3": "aws s3 sync dist s3://steppe/bugs --delete --cache-control 'max-age=3600'"
+    "deploy:s3": "aws s3 sync dist s3://steppe/bugs --delete --exclude index.html --cache-control \"max-age=31536000,immutable\" && aws s3 cp dist/index.html s3://steppe/bugs/index.html --cache-control \"no-cache\"",
+    "deploy:invalidate": "aws cloudfront create-invalidation --distribution-id E1WX2XAX1ZKY3D --paths \"/bugs/*\""
   },
   "dependencies": {
     "firebase": "^12.14.0",
