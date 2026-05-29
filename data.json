@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1780077153577",
+    "timestamp": "2026-05-29T17:52:33.577Z",
+    "username": "Fred",
+    "interface": "PC",
+    "chantier": "Embarquement",
+    "transporteur": "Navire",
+    "lieu": "F12",
+    "zone": "Entrepot",
+    "moduleUI": "",
+    "titre": "Big",
+    "description": "Ça fonctionne pas",
+    "etapes": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "resultatAttendu": "",
+    "resultatReel": "",
+    "typeBug": "",
+    "severite": "Majeur",
+    "frequence": "Souvent",
+    "affecteAutres": "Non",
+    "observations": "",
+    "photos": [],
+    "status": "déclarer",
+    "statusHistory": [
+      {
+        "status": "déclarer",
+        "timestamp": "2026-05-29T17:52:33.577Z"
+      }
+    ],
+    "closed": false
+  }
+]
