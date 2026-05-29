@@ -471,7 +471,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
     <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f5f5f5', minHeight: '100vh', padding: '0' }}>
       {/* Header */}
       <div style={{ backgroundColor: '#1F4788', color: 'white', padding: '20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-        <img src="/socit_du_terminal_de_l_escaut_ste_cover.jfif" alt="Logo" style={{ height: '60px', objectFit: 'contain' }} />
+        {/* <img src="socit_du_terminal_de_l_escaut_ste_cover.jfif" alt="Logo" style={{ height: '60px', objectFit: 'contain' }} /> */}
         <div>
           <h1 style={{ margin: '0 0 10px 0', fontSize: '28px', fontWeight: '600' }}>🏭 Rapport de Bugs - Winspot</h1>
           <p style={{ margin: '0', fontSize: '14px', opacity: 0.9 }}>Interface pour déclarer et suivre les dysfonctionnements</p>
