@@ -65,11 +65,80 @@ async function saveToGitHub(reports: BugReport[]): Promise<boolean> {
   }
 }
 
+async function createGitHubIssue(report: BugReport): Promise<boolean> {
+  if (!GITHUB_TOKEN) {
+    console.warn('GitHub token not configured');
+    return false;
+  }
+
+  try {
+    const body = `## 🐛 Rapport de Bug
+
+**👤 Rapporteur:** ${report.username}
+**📅 Date:** ${new Date(report.timestamp).toLocaleDateString('fr-FR')}
+**⚠️ Sévérité:** ${report.severite}
+
+### 📋 Détails
+- **Chantier:** ${report.chantier}
+- **Transporteur:** ${report.transporteur}
+- **Lieu:** ${report.lieu}
+- **Zone:** ${report.zone}
+- **Interface:** ${report.interface}
+- **Type:** ${report.typeBug}
+- **Fréquence:** ${report.frequence}
+- **Affecte autres:** ${report.affecteAutres}
+
+### 📝 Description
+${report.description}
+
+${report.moduleUI ? `### 🗂️ Module/Zone concernée\n${report.moduleUI}\n` : ''}
+
+${report.etapes.some(e => e.trim()) ? `### 🔧 Étapes pour reproduire\n${report.etapes.filter(e => e.trim()).map((e, i) => `${i + 1}. ${e}`).join('\n')}\n` : ''}
+
+${report.resultatAttendu ? `### ✓ Résultat attendu\n${report.resultatAttendu}\n` : ''}
+
+${report.resultatReel ? `### ✗ Résultat réel (le bug)\n${report.resultatReel}\n` : ''}
+
+${report.observations ? `### 📌 Observations\n${report.observations}` : ''}
+
+---
+*ID: ${report.id}*`;
+
+    const response = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/issues`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+          title: `[${report.severite}] ${report.titre}`,
+          body: body,
+          labels: [report.severite, report.interface]
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error('GitHub issue creation failed:', await response.text());
+      return false;
+    }
+
+    console.log('GitHub issue created successfully');
+    return true;
+  } catch (err) {
+    console.error('GitHub issue creation error:', err);
+    return false;
+  }
+}
+
 interface BugReport {
   id: string;
   timestamp: string;
   username: string;
-  interface: 'PC' | 'PdA';
+  interface: 'PC' | 'PdA' | 'Tablette';
   chantier: 'Déchargement' | 'Chargement' | 'Embarquement' | 'Débarquement';
   transporteur: 'Camion' | 'Navire' | 'Train SNCF' | 'Train Mardyck';
   lieu: 'Escaut' | 'F12' | 'F13';
@@ -85,6 +154,7 @@ interface BugReport {
   frequence: 'À chaque fois' | 'Souvent' | 'Occasionnellement' | 'Rare';
   affecteAutres: 'Oui' | 'Non' | 'Incertain';
   observations: string;
+  photos?: string[]; // URLs des photos Firebase Storage
   closed: boolean;
   closedBy?: 'support' | 'direction';
   closedByUser?: string;
@@ -112,39 +182,54 @@ const BugReportApp: React.FC = () => {
   });
   const [selectedReport, setSelectedReport] = useState<BugReport | null>(null);
   const [closeType, setCloseType] = useState<'support' | 'direction'>('support');
+  const [photosToUpload, setPhotosToUpload] = useState<File[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   const isAdmin = username === 'mAx' || username === 'ThO';
 
   // Load from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('bugReports');
+    const loadReports = async () => {
+      try {
+        const saved = localStorage.getItem('bugReports');
+        if (saved) setReports(JSON.parse(saved));
+      } catch (error) {
+        console.error('Erreur lors du chargement des rapports:', error);
+      }
+    };
+
     const savedUsername = localStorage.getItem('username');
-    if (saved) setReports(JSON.parse(saved));
     if (savedUsername) {
       setUsername(savedUsername);
       setUsernameSaved(true);
     }
+
+    loadReports();
   }, []);
 
-  // Save to localStorage and GitHub
+  // Save to localStorage
   useEffect(() => {
-    localStorage.setItem('bugReports', JSON.stringify(reports));
-    
-    // Sync to GitHub if token is configured
-    if (GITHUB_TOKEN && reports.length > 0) {
-      setSyncStatus('syncing');
-      saveToGitHub(reports).then(success => {
-        if (success) {
-          setSyncStatus('success');
-          setSyncMessage('Synchronisé avec GitHub ✓');
-          setTimeout(() => setSyncStatus('idle'), 3000);
-        } else {
-          setSyncStatus('error');
-          setSyncMessage('Erreur de synchronisation');
-          setTimeout(() => setSyncStatus('idle'), 3000);
-        }
-      });
-    }
+    const saveReports = async () => {
+      localStorage.setItem('bugReports', JSON.stringify(reports));
+      
+      // Sync to GitHub if token is configured
+      if (GITHUB_TOKEN && reports.length > 0) {
+        setSyncStatus('syncing');
+        saveToGitHub(reports).then(success => {
+          if (success) {
+            setSyncStatus('success');
+            setSyncMessage('Synchronisé avec GitHub ✓');
+            setTimeout(() => setSyncStatus('idle'), 3000);
+          } else {
+            setSyncStatus('error');
+            setSyncMessage('Erreur de synchronisation');
+            setTimeout(() => setSyncStatus('idle'), 3000);
+          }
+        });
+      }
+    };
+
+    saveReports();
   }, [reports]);
 
   const handleUsernameChange = (newUsername: string) => {
@@ -155,10 +240,35 @@ const BugReportApp: React.FC = () => {
     }
   };
 
-  const handleSubmitReport = () => {
+  const handleSubmitReport = async () => {
     if (!usernameSaved || !formData.titre || !formData.description) {
       alert('Veuillez remplir tous les champs obligatoires');
       return;
+    }
+
+    setUploadingPhotos(true);
+    let photoBase64: string[] = [];
+
+    // Convert photos to Base64
+    if (photosToUpload.length > 0) {
+      try {
+        for (const file of photosToUpload) {
+          const reader = new FileReader();
+          await new Promise((resolve, reject) => {
+            reader.onload = () => {
+              photoBase64.push(reader.result as string);
+              resolve(null);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors de la conversion des photos:', error);
+        alert('Erreur lors de la conversion des photos');
+        setUploadingPhotos(false);
+        return;
+      }
     }
 
     const newReport: BugReport = {
@@ -181,10 +291,26 @@ const BugReportApp: React.FC = () => {
       frequence: formData.frequence as any,
       affecteAutres: formData.affecteAutres as any,
       observations: formData.observations || '',
+      photos: photoBase64,
       closed: false
     };
 
+    // Add to local state
     setReports([newReport, ...reports]);
+
+    // Create GitHub Issue if token is configured
+    if (GITHUB_TOKEN) {
+      const success = await createGitHubIssue(newReport);
+      if (success) {
+        setSyncStatus('success');
+        setSyncMessage('Rapport créé et GitHub Issue générée ✓');
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } else {
+        setSyncStatus('error');
+        setSyncMessage('Rapport créé mais issue GitHub échouée');
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      }
+    }
     
     // Reset form
     setFormData({
@@ -198,11 +324,12 @@ const BugReportApp: React.FC = () => {
       etapes: ['', '', '', '', ''],
       typeBug: ''
     });
-
+    setPhotosToUpload([]);
+    setUploadingPhotos(false);
     setView('list');
   };
 
-  const handleCloseReport = (reportId: string) => {
+  const handleCloseReport = async (reportId: string) => {
     const report = reports.find(r => r.id === reportId);
     if (report) {
       const updated = reports.map(r =>
@@ -256,7 +383,7 @@ const BugReportApp: React.FC = () => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Ex: freddy, jerem, romu..."
+            placeholder="Ex: sandra, geoffroy,..."
             style={{ padding: '8px 12px', border: '1px solid #ffc107', borderRadius: '4px', fontSize: '14px', flex: 1, minWidth: '150px' }}
           />
           <button
@@ -306,42 +433,44 @@ const BugReportApp: React.FC = () => {
         </div>
       )}
 
-      {/* Navigation */}
-      <div style={{ backgroundColor: 'white', padding: '15px 20px', borderBottom: '1px solid #ddd', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <button
-          onClick={() => setView('list')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: view === 'list' ? '#1F4788' : '#f0f0f0',
-            color: view === 'list' ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '14px'
-          }}
-        >
-          📋 Liste des Rapports ({openReports.length} ouverts)
-        </button>
-        <button
-          onClick={() => {
-            setView('form');
-            setSelectedReport(null);
-          }}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: view === 'form' ? '#1F4788' : '#f0f0f0',
-            color: view === 'form' ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            fontSize: '14px'
-          }}
-        >
-          ➕ Nouveau Rapport
-        </button>
-      </div>
+      {usernameSaved && (
+        <div style={{ backgroundColor: 'white', padding: '15px 20px', borderBottom: '1px solid #ddd', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Navigation */}
+          <button
+            onClick={() => setView('list')}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: view === 'list' ? '#1F4788' : '#f0f0f0',
+              color: view === 'list' ? 'white' : '#333',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '14px'
+            }}
+          >
+            📋 Liste des Rapports ({openReports.length} ouverts)
+          </button>
+          <button
+            onClick={() => {
+              setView('form');
+              setSelectedReport(null);
+            }}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: view === 'form' ? '#1F4788' : '#f0f0f0',
+              color: view === 'form' ? 'white' : '#333',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '14px'
+            }}
+          >
+            ➕ Nouveau Rapport
+          </button>
+        </div>
+      )}
 
       {/* Main Content */}
       <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -573,19 +702,39 @@ const BugReportApp: React.FC = () => {
               />
             </div>
 
+            {/* Photos Upload */}
+            <div style={{ marginBottom: '20px', backgroundColor: '#f0f7ff', padding: '15px', borderRadius: '4px', border: '2px dashed #0066cc' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>📸 Ajouter des photos (optionnel)</label>
+              <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#0066cc' }}>Les photos seront stockées localement dans votre navigateur</p>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => setPhotosToUpload(Array.from(e.target.files || []))}
+                style={{ width: '100%', padding: '10px', border: '1px solid #0066cc', borderRadius: '4px', fontSize: '14px' }}
+              />
+              {photosToUpload.length > 0 && (
+                <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#0066cc' }}>
+                  ✓ {photosToUpload.length} photo(s) sélectionnée(s)
+                </p>
+              )}
+            </div>
+
             {/* Buttons */}
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setView('list')}
-                style={{ padding: '10px 20px', backgroundColor: '#f0f0f0', color: '#333', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
+                disabled={uploadingPhotos}
+                style={{ padding: '10px 20px', backgroundColor: '#f0f0f0', color: '#333', border: '1px solid #ddd', borderRadius: '4px', cursor: uploadingPhotos ? 'not-allowed' : 'pointer', fontWeight: '500', opacity: uploadingPhotos ? 0.5 : 1 }}
               >
                 Annuler
               </button>
               <button
                 onClick={handleSubmitReport}
-                style={{ padding: '10px 20px', backgroundColor: '#92D050', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
+                disabled={uploadingPhotos}
+                style={{ padding: '10px 20px', backgroundColor: '#92D050', color: 'white', border: 'none', borderRadius: '4px', cursor: uploadingPhotos ? 'not-allowed' : 'pointer', fontWeight: '500', opacity: uploadingPhotos ? 0.5 : 1 }}
               >
-                ✓ Soumettre le rapport
+                {uploadingPhotos ? '⏳ Upload en cours...' : '✓ Soumettre le rapport'}
               </button>
             </div>
           </div>
@@ -657,6 +806,39 @@ const BugReportApp: React.FC = () => {
                     <>
                       <h3 style={{ color: '#2E5FA8' }}>Observations supplémentaires</h3>
                       <p>{selectedReport.observations}</p>
+                    </>
+                  )}
+
+                  {selectedReport.photos && selectedReport.photos.length > 0 && (
+                    <>
+                      <h3 style={{ color: '#2E5FA8' }}>📸 Photos</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+                        {selectedReport.photos.map((photoUrl, idx) => (
+                          <a
+                            key={idx}
+                            href={photoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', textDecoration: 'none' }}
+                          >
+                            <img
+                              src={photoUrl}
+                              alt={`Photo ${idx + 1}`}
+                              style={{
+                                width: '100%',
+                                height: '150px',
+                                objectFit: 'cover',
+                                borderRadius: '4px',
+                                border: '1px solid #ddd',
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                            />
+                          </a>
+                        ))}
+                      </div>
                     </>
                   )}
                 </div>

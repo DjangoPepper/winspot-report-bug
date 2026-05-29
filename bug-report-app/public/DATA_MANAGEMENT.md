@@ -5,12 +5,14 @@
 Les données sont stockées **localement dans le navigateur** sur chaque appareil.
 
 ### Avantages ✅
+
 - Fonctionne hors ligne
 - Instantané (pas d'attente réseau)
 - Pas de coûts de serveur
 - Respecte la confidentialité
 
 ### Inconvénients ❌
+
 - Données non partagées entre appareils/navigateurs
 - Risque de perte si le cache est vidé
 - Capacité limitée (~5-10MB)
@@ -33,8 +35,8 @@ console.log(JSON.parse(data));
 copy(data);
 ```
 
-5. Un fichier JSON est maintenant dans votre clipboard
-6. Collez-le dans un éditeur (Notepad, VS Code) et sauvegardez en `.json`
+1. Un fichier JSON est maintenant dans votre clipboard
+2. Collez-le dans un éditeur (Notepad, VS Code) et sauvegardez en `.json`
 
 ### Méthode 2 : Via JavaScript (plus robuste)
 
@@ -66,9 +68,9 @@ console.log('✓ Données importées !');
 location.reload(); // Actualiser la page
 ```
 
-2. Collez votre JSON à la place de `[PASTE_JSON_HERE]`
-3. Appuyez sur Entrée
-4. La page se recharge automatiquement
+1. Collez votre JSON à la place de `[PASTE_JSON_HERE]`
+2. Appuyez sur Entrée
+3. La page se recharge automatiquement
 
 ---
 
@@ -154,7 +156,7 @@ useEffect(() => {
 
 ### Option B : Utiliser Firebase (solution cloud)
 
-1. Créez un compte Firebase : https://firebase.google.com
+1. Créez un compte Firebase : <https://firebase.google.com>
 
 2. Ajoutez Firebase au projet :
 
@@ -162,7 +164,7 @@ useEffect(() => {
 npm install firebase
 ```
 
-3. Créez un fichier `src/firebase.ts` :
+1. Créez un fichier `src/firebase.ts` :
 
 ```typescript
 import { initializeApp } from 'firebase/app';
@@ -181,7 +183,7 @@ export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 ```
 
-4. Dans `BugReportApp.tsx` :
+1. Dans `BugReportApp.tsx` :
 
 ```typescript
 import { db } from './firebase';
@@ -279,6 +281,7 @@ echo "✓ Sauvegarde créée: $FILE"
 ```
 
 Ajoutez au crontab :
+
 ```bash
 0 2 * * * /path/to/backup-reports.sh
 ```
