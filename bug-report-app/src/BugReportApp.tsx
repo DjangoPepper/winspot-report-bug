@@ -191,6 +191,7 @@ const BugReportApp: React.FC = () => {
   const [photosToUpload, setPhotosToUpload] = useState<File[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [modalPhoto, setModalPhoto] = useState<string | null>(null);
 
   const isAdmin = ['mAx', 'ThO', 'ProG'].includes(username);
   const isSuperAdmin = username === 'ProG';
@@ -278,18 +279,24 @@ const BugReportApp: React.FC = () => {
   };
 
   const handleStatusUpdate = (id: string, newStatus: 'déclarer' | 'transmis' | 'résolus') => {
+    let updatedReport: BugReport | null = null;
     setReports(reports.map(r => {
       if (r.id === id) {
         const updatedHistory = [...r.statusHistory, { status: newStatus, timestamp: new Date().toISOString() }];
-        return { 
-          ...r, 
-          status: newStatus, 
+        updatedReport = {
+          ...r,
+          status: newStatus,
           statusHistory: updatedHistory,
           closed: newStatus === 'résolus'
         };
+        return updatedReport;
       }
       return r;
     }));
+    // Keep the open detail view in sync
+    if (updatedReport && selectedReport?.id === id) {
+      setSelectedReport(updatedReport);
+    }
   };
 
   const handleRelance = (id: string) => {
@@ -299,6 +306,25 @@ const BugReportApp: React.FC = () => {
       const otherReports = reports.filter(r => r.id !== id);
       setReports([updatedReport, ...otherReports]);
       alert('Rapport remonté en tête de liste !');
+    }
+  };
+
+  const handleSaveBackup = () => {
+    try {
+      const data = JSON.stringify(reports, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      a.href = url;
+      a.download = `winspot-bugs-backup-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde du backup');
     }
   };
 
@@ -595,6 +621,23 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
           >
             ➕ Nouveau Rapport
           </button>
+          <button
+            onClick={handleSaveBackup}
+            title="Télécharger une sauvegarde locale (JSON)"
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#f0f0f0',
+              color: '#333',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '14px',
+              marginLeft: 'auto'
+            }}
+          >
+            💾 Sauvegarder
+          </button>
         </div>
       )}
 
@@ -885,7 +928,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
                     </button>
                     {(!selectedReport.closed || isSuperAdmin) && (
                       <button onClick={() => handleRelance(selectedReport.id)} style={{ padding: '8px 12px', backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffc107', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
-                        ⚡ Relancer
+                        ⚡ Prioriser / Relancer
                       </button>
                     )}
                     {isSuperAdmin && (
@@ -963,31 +1006,27 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
                   {selectedReport.photos && selectedReport.photos.length > 0 && (
                     <>
                       <h3 style={{ color: '#2E5FA8' }}>📸 Photos</h3>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+                      <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#999' }}>Cliquez sur une miniature pour l'agrandir</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                         {selectedReport.photos.map((photoUrl, idx) => (
-                          <a
+                          <img
                             key={idx}
-                            href={photoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', textDecoration: 'none' }}
-                          >
-                            <img
-                              src={photoUrl}
-                              alt={`Photo ${idx + 1}`}
-                              style={{
-                                width: '100%',
-                                height: '150px',
-                                objectFit: 'cover',
-                                borderRadius: '4px',
-                                border: '1px solid #ddd',
-                                cursor: 'pointer',
-                                transition: 'transform 0.2s',
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                            />
-                          </a>
+                            src={photoUrl}
+                            alt={`Photo ${idx + 1}`}
+                            title="Cliquer pour agrandir"
+                            onClick={() => setModalPhoto(photoUrl)}
+                            style={{
+                              width: '100px',
+                              height: '100px',
+                              objectFit: 'cover',
+                              borderRadius: '4px',
+                              border: '1px solid #ddd',
+                              cursor: 'pointer',
+                              transition: 'transform 0.2s',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                          />
                         ))}
                       </div>
                     </>
@@ -1006,11 +1045,31 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
                   </div>
 
                   {!selectedReport.closed && isAdmin && (
-                    <div style={{ marginTop: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{ marginTop: '15px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '14px', fontWeight: '500' }}>Changer l'état :</span>
-                      <button onClick={() => handleStatusUpdate(selectedReport.id, 'transmis')} style={{ padding: '5px 12px', backgroundColor: '#FF0000', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-                        Transmis
-                      </button>
+                      {(['déclarer', 'transmis', 'résolus'] as const).map((s) => {
+                        const isCurrent = selectedReport.status === s;
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => handleStatusUpdate(selectedReport.id, s)}
+                            disabled={isCurrent}
+                            style={{
+                              padding: '5px 12px',
+                              backgroundColor: isCurrent ? '#fff' : getStatusColor(s),
+                              color: isCurrent ? getStatusColor(s) : 'white',
+                              border: `2px solid ${getStatusColor(s)}`,
+                              borderRadius: '4px',
+                              cursor: isCurrent ? 'default' : 'pointer',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              opacity: isCurrent ? 0.7 : 1,
+                            }}
+                          >
+                            {s.toUpperCase()}{isCurrent ? ' ✓' : ''}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1156,6 +1215,61 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
         <p style={{ margin: '0' }}>💾 Les données sont sauvegardées sur le Claoud • 📱 Compatible tablette et PC</p>
         {/* <p style={{ margin: '8px 0 0 0' }}>Admin: mAx, ThO</p> */}
       </div>
+
+      {/* Photo Modal */}
+      {modalPhoto && (
+        <div
+          onClick={() => setModalPhoto(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+            cursor: 'zoom-out',
+          }}
+        >
+          <button
+            onClick={() => setModalPhoto(null)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              color: '#333',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              fontSize: '20px',
+              cursor: 'pointer',
+              lineHeight: '40px',
+            }}
+            aria-label="Fermer"
+          >
+            ✕
+          </button>
+          <img
+            src={modalPhoto}
+            alt="Photo en grand"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '95%',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              borderRadius: '4px',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+              cursor: 'default',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
