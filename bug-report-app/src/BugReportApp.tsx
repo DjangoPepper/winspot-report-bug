@@ -155,6 +155,11 @@ interface BugReport {
   affecteAutres: 'Oui' | 'Non' | 'Incertain';
   observations: string;
   photos?: string[]; // URLs des photos Firebase Storage
+  status: 'déclarer' | 'transmis' | 'résolus';
+  statusHistory: {
+    status: string;
+    timestamp: string;
+  }[];
   closed: boolean;
   closedBy?: 'support' | 'direction';
   closedByUser?: string;
@@ -178,14 +183,17 @@ const BugReportApp: React.FC = () => {
     frequence: 'Souvent',
     affecteAutres: 'Non',
     etapes: ['', '', '', '', ''],
-    typeBug: ''
+    typeBug: '',
+    status: 'déclarer'
   });
   const [selectedReport, setSelectedReport] = useState<BugReport | null>(null);
   const [closeType, setCloseType] = useState<'support' | 'direction'>('support');
   const [photosToUpload, setPhotosToUpload] = useState<File[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
-  const isAdmin = username === 'mAx' || username === 'ThO';
+  const isAdmin = ['mAx', 'ThO', 'ProG'].includes(username);
+  const isSuperAdmin = username === 'ProG';
 
   // Load from localStorage
   useEffect(() => {
@@ -240,6 +248,68 @@ const BugReportApp: React.FC = () => {
     }
   };
 
+  const handleDeleteReport = (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce rapport ?')) {
+      setReports(reports.filter(r => r.id !== id));
+      setSelectedReport(null);
+    }
+  };
+
+  const handleUncloseReport = (id: string) => {
+    setReports(reports.map(r => 
+      r.id === id 
+        ? { ...r, closed: false, status: 'déclarer' as const, statusHistory: [...r.statusHistory, { status: 'déclarer (Réouvert)', timestamp: new Date().toISOString() }] } 
+        : r
+    ));
+    setSelectedReport(null);
+  };
+
+  const handleStatusUpdate = (id: string, newStatus: 'déclarer' | 'transmis' | 'résolus') => {
+    setReports(reports.map(r => {
+      if (r.id === id) {
+        const updatedHistory = [...r.statusHistory, { status: newStatus, timestamp: new Date().toISOString() }];
+        return { 
+          ...r, 
+          status: newStatus, 
+          statusHistory: updatedHistory,
+          closed: newStatus === 'résolus'
+        };
+      }
+      return r;
+    }));
+  };
+
+  const handleRelance = (id: string) => {
+    const report = reports.find(r => r.id === id);
+    if (report) {
+      const updatedReport = { ...report, timestamp: new Date().toISOString() };
+      const otherReports = reports.filter(r => r.id !== id);
+      setReports([updatedReport, ...otherReports]);
+      alert('Rapport remonté en tête de liste !');
+    }
+  };
+
+  const handleCopyToClipboard = (report: BugReport) => {
+    const text = `
+RAPPORT DE BUG WINSPOT
+----------------------
+Titre: ${report.titre}
+Sévérité: ${report.severite}
+Date: ${new Date(report.timestamp).toLocaleString('fr-FR')}
+Rapporteur: ${report.username}
+Status: ${report.status}
+
+Description:
+${report.description}
+
+Lieu: ${report.lieu} | Zone: ${report.zone}
+Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
+----------------------
+    `.trim();
+    navigator.clipboard.writeText(text);
+    alert('Rapport copié dans le presse-papiers !');
+  };
+
   const handleSubmitReport = async () => {
     if (!usernameSaved || !formData.titre || !formData.description) {
       alert('Veuillez remplir tous les champs obligatoires');
@@ -271,44 +341,55 @@ const BugReportApp: React.FC = () => {
       }
     }
 
-    const newReport: BugReport = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      username: username,
-      interface: formData.interface as any,
-      chantier: formData.chantier as any,
-      transporteur: formData.transporteur as any,
-      lieu: formData.lieu as any,
-      zone: formData.zone as any,
-      moduleUI: formData.moduleUI || '',
-      titre: formData.titre || '',
-      description: formData.description || '',
-      etapes: formData.etapes || [],
-      resultatAttendu: formData.resultatAttendu || '',
-      resultatReel: formData.resultatReel || '',
-      typeBug: formData.typeBug || '',
-      severite: formData.severite as any,
-      frequence: formData.frequence as any,
-      affecteAutres: formData.affecteAutres as any,
-      observations: formData.observations || '',
-      photos: photoBase64,
-      closed: false
-    };
+    if (isEditing && formData.id) {
+      const updatedReports = reports.map(r => 
+        r.id === formData.id ? { ...r, ...formData as BugReport, photos: photoBase64.length > 0 ? photoBase64 : r.photos } : r
+      );
+      setReports(updatedReports);
+      setIsEditing(false);
+    } else {
+      const now = new Date().toISOString();
+      const newReport: BugReport = {
+        id: Date.now().toString(),
+        timestamp: now,
+        username: username,
+        interface: formData.interface as any,
+        chantier: formData.chantier as any,
+        transporteur: formData.transporteur as any,
+        lieu: formData.lieu as any,
+        zone: formData.zone as any,
+        moduleUI: formData.moduleUI || '',
+        titre: formData.titre || '',
+        description: formData.description || '',
+        etapes: formData.etapes || [],
+        resultatAttendu: formData.resultatAttendu || '',
+        resultatReel: formData.resultatReel || '',
+        typeBug: formData.typeBug || '',
+        severite: formData.severite as any,
+        frequence: formData.frequence as any,
+        affecteAutres: formData.affecteAutres as any,
+        observations: formData.observations || '',
+        photos: photoBase64,
+        status: 'déclarer',
+        statusHistory: [{ status: 'déclarer', timestamp: now }],
+        closed: false
+      };
 
-    // Add to local state
-    setReports([newReport, ...reports]);
+      // Add to local state
+      setReports([newReport, ...reports]);
 
-    // Create GitHub Issue if token is configured
-    if (GITHUB_TOKEN) {
-      const success = await createGitHubIssue(newReport);
-      if (success) {
-        setSyncStatus('success');
-        setSyncMessage('Rapport créé et GitHub Issue générée ✓');
-        setTimeout(() => setSyncStatus('idle'), 3000);
-      } else {
-        setSyncStatus('error');
-        setSyncMessage('Rapport créé mais issue GitHub échouée');
-        setTimeout(() => setSyncStatus('idle'), 3000);
+      // Create GitHub Issue if token is configured
+      if (GITHUB_TOKEN) {
+        const success = await createGitHubIssue(newReport);
+        if (success) {
+          setSyncStatus('success');
+          setSyncMessage('Rapport créé et GitHub Issue générée ✓');
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        } else {
+          setSyncStatus('error');
+          setSyncMessage('Rapport créé mais issue GitHub échouée');
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        }
       }
     }
     
@@ -329,14 +410,23 @@ const BugReportApp: React.FC = () => {
     setView('list');
   };
 
+  const handleEditClick = (report: BugReport) => {
+    setFormData(report);
+    setIsEditing(true);
+    setView('form');
+  };
+
   const handleCloseReport = async (reportId: string) => {
     const report = reports.find(r => r.id === reportId);
     if (report) {
+      const now = new Date().toISOString();
       const updated = reports.map(r =>
         r.id === reportId
           ? {
               ...r,
               closed: true,
+              status: 'résolus' as const,
+              statusHistory: [...r.statusHistory, { status: `résolus (${closeType})`, timestamp: now }],
               closedBy: closeType,
               closedByUser: username,
               closedDate: new Date().toISOString()
@@ -361,8 +451,21 @@ const BugReportApp: React.FC = () => {
     }
   };
 
-  const openReports = reports.filter(r => !r.closed);
-  const closedReports = reports.filter(r => r.closed);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'déclarer':
+        return '#DC143C'; // Crimson
+      case 'transmis':
+        return '#FF0000'; // Red
+      case 'résolus':
+        return '#008000'; // Green
+      default:
+        return '#666';
+    }
+  };
+
+  const openReports = reports.filter(r => !r.closed).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const closedReports = reports.filter(r => r.closed).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f5f5f5', minHeight: '100vh', padding: '0' }}>
@@ -437,7 +540,7 @@ const BugReportApp: React.FC = () => {
         <div style={{ backgroundColor: 'white', padding: '15px 20px', borderBottom: '1px solid #ddd', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           {/* Navigation */}
           <button
-            onClick={() => setView('list')}
+            onClick={() => { setView('list'); setIsEditing(false); }}
             style={{
               padding: '10px 20px',
               backgroundColor: view === 'list' ? '#1F4788' : '#f0f0f0',
@@ -454,6 +557,7 @@ const BugReportApp: React.FC = () => {
           <button
             onClick={() => {
               setView('form');
+              setIsEditing(false);
               setSelectedReport(null);
             }}
             style={{
@@ -477,7 +581,7 @@ const BugReportApp: React.FC = () => {
         {/* FORM VIEW */}
         {view === 'form' && (
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ marginTop: '0', color: '#1F4788' }}>Déclarer un nouveau bug</h2>
+            <h2 style={{ marginTop: '0', color: '#1F4788' }}>{isEditing ? 'Modifier le rapport' : 'Déclarer un nouveau bug'}</h2>
 
             {/* Row: Chantier, Transporteur */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginBottom: '15px' }}>
@@ -746,14 +850,39 @@ const BugReportApp: React.FC = () => {
             {selectedReport ? (
               // DETAIL VIEW
               <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <h2 style={{ margin: '0', color: '#1F4788' }}>{selectedReport.titre}</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <h2 style={{ margin: '0', color: '#1F4788' }}>{selectedReport.titre}</h2>
+                    <span style={{ backgroundColor: getStatusColor(selectedReport.status), color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
+                      {selectedReport.status.toUpperCase()}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => handleCopyToClipboard(selectedReport)} style={{ padding: '8px 12px', backgroundColor: '#e7f3ff', color: '#0066cc', border: '1px solid #0066cc', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                      📋 Copier pour Mail
+                    </button>
+                    {(!selectedReport.closed || isSuperAdmin) && (
+                      <button onClick={() => handleRelance(selectedReport.id)} style={{ padding: '8px 12px', backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffc107', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        ⚡ Relancer
+                      </button>
+                    )}
+                    {isSuperAdmin && (
+                      <>
+                        <button onClick={() => handleEditClick(selectedReport)} style={{ padding: '8px 12px', backgroundColor: '#f0f0f0', color: '#333', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                          ✏️ Éditer
+                        </button>
+                        <button onClick={() => handleDeleteReport(selectedReport.id)} style={{ padding: '8px 12px', backgroundColor: '#fee', color: '#c00', border: '1px solid #c00', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                          🗑️ Supprimer
+                        </button>
+                      </>
+                    )}
                   <button
                     onClick={() => setSelectedReport(null)}
                     style={{ padding: '8px 12px', backgroundColor: '#f0f0f0', color: '#333', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                   >
                     ← Retour
                   </button>
+                  </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px', backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '4px' }}>
@@ -843,34 +972,62 @@ const BugReportApp: React.FC = () => {
                   )}
                 </div>
 
+                {/* Status & History Section */}
+                <div style={{ marginBottom: '20px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                  <h3 style={{ color: '#2E5FA8', fontSize: '16px' }}>🕒 Historique du traitement</h3>
+                  <div style={{ fontSize: '13px', color: '#666' }}>
+                    {selectedReport.statusHistory?.map((h, i) => (
+                      <div key={i} style={{ marginBottom: '5px' }}>
+                        • <strong>{new Date(h.timestamp).toLocaleString('fr-FR')}</strong> : État passé à <span style={{ color: getStatusColor(h.status.split(' ')[0]) }}>{h.status}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {!selectedReport.closed && isAdmin && (
+                    <div style={{ marginTop: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '500' }}>Changer l'état :</span>
+                      <button onClick={() => handleStatusUpdate(selectedReport.id, 'transmis')} style={{ padding: '5px 12px', backgroundColor: '#FF0000', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                        Transmis
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {selectedReport.closed ? (
-                  <div style={{ backgroundColor: '#d4edda', border: '1px solid #28a745', padding: '15px', borderRadius: '4px', marginBottom: '20px' }}>
-                    <strong style={{ color: '#155724' }}>✓ Rapport clôturé</strong>
-                    <p style={{ margin: '8px 0 0 0', color: '#155724' }}>Clôturé par <strong>{selectedReport.closedByUser}</strong> ({selectedReport.closedBy}) le {new Date(selectedReport.closedDate || '').toLocaleDateString('fr-FR')}</p>
+                  <div style={{ backgroundColor: '#d4edda', border: '1px solid #28a745', padding: '15px', borderRadius: '4px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong style={{ color: '#155724' }}>✓ Rapport clôturé</strong>
+                      <p style={{ margin: '8px 0 0 0', color: '#155724' }}>Clôturé par <strong>{selectedReport.closedByUser}</strong> ({selectedReport.closedBy}) le {new Date(selectedReport.closedDate || '').toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    {isSuperAdmin && (
+                      <button onClick={() => handleUncloseReport(selectedReport.id)} style={{ padding: '8px 16px', backgroundColor: 'white', color: '#28a745', border: '1px solid #28a745', borderRadius: '4px', cursor: 'pointer' }}>
+                        🔓 Déclôturer
+                      </button>
+                    )}
                   </div>
                 ) : isAdmin ? (
                   <div style={{ backgroundColor: '#fff3cd', padding: '15px', borderRadius: '4px' }}>
-                    <strong>Clôturer ce rapport</strong>
+                    <strong>Finaliser et Clôturer</strong>
                     <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
                       <select
                         value={closeType}
                         onChange={(e) => setCloseType(e.target.value as any)}
                         style={{ padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px' }}
                       >
-                        <option value="support">Support</option>
-                        <option value="direction">Direction</option>
+                        <option value="support">Signé par Support</option>
+                        <option value="direction">Signé par Direction</option>
                       </select>
                       <button
                         onClick={() => handleCloseReport(selectedReport.id)}
                         style={{ padding: '8px 16px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
                       >
-                        Clôturer
+                        ✓ Marquer comme Résolu & Clôturer
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div style={{ backgroundColor: '#f0f0f0', padding: '15px', borderRadius: '4px', textAlign: 'center', color: '#666' }}>
-                    Seuls les administrateurs (support, direction) peuvent clôturer les rapports
+                    Seuls les administrateurs peuvent clôturer les rapports
                   </div>
                 )}
               </div>
@@ -965,7 +1122,7 @@ const BugReportApp: React.FC = () => {
       {/* Footer */}
       <div style={{ backgroundColor: '#f5f5f5', padding: '20px', textAlign: 'center', color: '#999', fontSize: '12px', marginTop: '30px', borderTop: '1px solid #ddd' }}>
         <p style={{ margin: '0' }}>💾 Les données sont sauvegardées localement • 📱 Compatible tablette et PC</p>
-        <p style={{ margin: '8px 0 0 0' }}>Admin: mAx, ThO</p>
+        {/* <p style={{ margin: '8px 0 0 0' }}>Admin: mAx, ThO</p> */}
       </div>
     </div>
   );
