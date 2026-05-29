@@ -809,7 +809,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
             {/* Photos Upload */}
             <div style={{ marginBottom: '20px', backgroundColor: '#f0f7ff', padding: '15px', borderRadius: '4px', border: '2px dashed #0066cc' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>📸 Ajouter des photos (optionnel)</label>
-              <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#0066cc' }}>Les photos seront stockées localement dans votre navigateur</p>
+              <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#0066cc' }}>Les photos sont stockées localement dans votre navigateur</p>
               <input
                 type="file"
                 multiple
@@ -1121,7 +1121,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
 
       {/* Footer */}
       <div style={{ backgroundColor: '#f5f5f5', padding: '20px', textAlign: 'center', color: '#999', fontSize: '12px', marginTop: '30px', borderTop: '1px solid #ddd' }}>
-        <p style={{ margin: '0' }}>💾 Les données sont sauvegardées localement • 📱 Compatible tablette et PC</p>
+        <p style={{ margin: '0' }}>💾 Les données sont sauvegardées sur Claoud • 📱 Compatible tablette et PC</p>
         {/* <p style={{ margin: '8px 0 0 0' }}>Admin: mAx, ThO</p> */}
       </div>
     </div>
