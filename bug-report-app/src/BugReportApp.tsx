@@ -200,7 +200,20 @@ const BugReportApp: React.FC = () => {
     const loadReports = async () => {
       try {
         const saved = localStorage.getItem('bugReports');
-        if (saved) setReports(JSON.parse(saved));
+        if (saved) {
+          const parsed: BugReport[] = JSON.parse(saved);
+          // Normalize old reports that may miss newer fields
+          const normalized = parsed.map(r => ({
+            ...r,
+            status: r.status || 'déclarer',
+            statusHistory: Array.isArray(r.statusHistory)
+              ? r.statusHistory
+              : [{ status: r.status || 'déclarer', timestamp: r.timestamp || new Date().toISOString() }],
+            etapes: Array.isArray(r.etapes) ? r.etapes : [],
+            closed: r.closed ?? false,
+          }));
+          setReports(normalized);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des rapports:', error);
       }
@@ -307,12 +320,21 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
 ----------------------
     `.trim();
     navigator.clipboard.writeText(text);
-    alert('Rapport copié dans le presse-papiers !');
+    alert('Rapport copié dans le presse-papiers ! ctrl + v pour coller');
   };
 
   const handleSubmitReport = async () => {
-    if (!usernameSaved || !formData.titre || !formData.description) {
-      alert('Veuillez remplir tous les champs obligatoires');
+    const missingFields: string[] = [];
+    if (!usernameSaved) missingFields.push('Prénom (en haut de la page)');
+    if (!formData.titre?.trim()) missingFields.push('Titre du bug');
+    if (!formData.interface) missingFields.push('Interface');
+    if (!formData.description?.trim()) missingFields.push('Description détaillée');
+
+    if (missingFields.length > 0) {
+      alert(
+        'Veuillez remplir les champs obligatoires suivants :\n\n• ' +
+          missingFields.join('\n• ')
+      );
       return;
     }
 
@@ -669,7 +691,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
 
             {/* Module UI */}
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>Module/Zone UI concernée</label>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>Module/Zone Interface Utilisateur concernée</label>
               <input
                 type="text"
                 value={formData.moduleUI || ''}
@@ -1068,6 +1090,16 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                             <span style={{
                               padding: '6px 12px',
+                              backgroundColor: getStatusColor(report.status),
+                              color: 'white',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: '500'
+                            }}>
+                              {report.status?.toUpperCase()}
+                            </span>
+                            <span style={{
+                              padding: '6px 12px',
                               backgroundColor: getSeverityColor(report.severite),
                               color: 'white',
                               borderRadius: '4px',
@@ -1121,7 +1153,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
 
       {/* Footer */}
       <div style={{ backgroundColor: '#f5f5f5', padding: '20px', textAlign: 'center', color: '#999', fontSize: '12px', marginTop: '30px', borderTop: '1px solid #ddd' }}>
-        <p style={{ margin: '0' }}>💾 Les données sont sauvegardées sur Claoud • 📱 Compatible tablette et PC</p>
+        <p style={{ margin: '0' }}>💾 Les données sont sauvegardées sur le Claoud • 📱 Compatible tablette et PC</p>
         {/* <p style={{ margin: '8px 0 0 0' }}>Admin: mAx, ThO</p> */}
       </div>
     </div>
