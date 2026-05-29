@@ -3,12 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://djangopepper.github.io/winspot-report-bug/",
+  "homepage": "https://stepe.click/bugs/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && npm run deploy:s3",
+    "deploy:gh": "npm run build && gh-pages -d dist",
+    "deploy:s3": "aws s3 sync dist s3://steppe/bugs --delete --cache-control 'max-age=3600'"
   },
   "dependencies": {
     "react": "^18.2.0",

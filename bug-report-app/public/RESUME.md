@@ -52,11 +52,13 @@ DOCUMENTATION
 ## 🚀 Démarrage en 5 étapes
 
 ### 1️⃣ Télécharger Node.js (2 min)
+
 ```
 https://nodejs.org → Télécharger LTS
 ```
 
 ### 2️⃣ Préparer les fichiers (3 min)
+
 ```
 Créer dossier: bug-report-app
 Créer dossier: src/ dedans
@@ -64,6 +66,7 @@ Copier TOUS les fichiers aux bons endroits (voir SETUP_CHECKLIST.md)
 ```
 
 ### 3️⃣ Installer & Tester (3 min)
+
 ```bash
 cd bug-report-app
 npm install
@@ -72,12 +75,14 @@ npm run dev
 ```
 
 ### 4️⃣ Créer repository GitHub (2 min)
+
 ```
 https://github.com/new
 Créer repo "bug-report-app"
 ```
 
 ### 5️⃣ Déployer (2 min)
+
 ```bash
 git init
 git remote add origin https://github.com/VOUS/bug-report-app.git
@@ -94,15 +99,19 @@ git push -u origin main
 ## 📖 Guides par cas d'usage
 
 ### 👤 Je suis utilisateur normal
+
 → **Lire** : QUICKSTART.md (section "Utilisation")
 
 ### 👨‍💻 Je suis développeur/IT
+
 → **Lire** : SETUP_CHECKLIST.md (phases 1-5)
 
 ### 🔧 Je veux synchroniser les données
+
 → **Lire** : DATA_MANAGEMENT.md (sections 4, 5, 6)
 
 ### 🏢 Je veux adapter pour mon entreprise
+
 → **Lire** : README.md (section "Personnalisation")
 
 ---
@@ -112,12 +121,14 @@ git push -u origin main
 ### Créer un rapport
 
 **Étapes:**
+
 1. Entrez votre prénom
 2. Cliquez "➕ Nouveau Rapport"
 3. Remplissez les champs *
 4. Cliquez "✓ Soumettre"
 
 **Champs disponibles:**
+
 - Contexte : Chantier, Transporteur, Lieu, Zone
 - Détails : Titre, Module UI, Description
 - Reproduction : Étapes numérotées
@@ -127,6 +138,7 @@ git push -u origin main
 ### Consulter les rapports
 
 **Affichage:**
+
 - Liste des rapports ouverts (🔴)
 - Cliquer pour voir les détails complets
 - Section "Rapports clôturés" en bas (✓)
@@ -134,11 +146,13 @@ git push -u origin main
 ### Clôturer un rapport (admin)
 
 **Droits:**
+
 - ✅ mAx
 - ✅ ThO
 - ❌ Autres utilisateurs
 
 **Processus:**
+
 1. Cliquer sur le rapport
 2. Choisir "support" ou "direction"
 3. Cliquer "Clôturer"
@@ -151,11 +165,13 @@ git push -u origin main
 ### Où sont stockées les données ?
 
 **Par défaut** : localStorage du navigateur
+
 - ✅ Fonctionne hors ligne
 - ✅ Instantané
 - ❌ Non synchronisé entre appareils
 
 **Options avancées** (voir DATA_MANAGEMENT.md):
+
 - GitHub API
 - Firebase
 - Supabase
@@ -164,6 +180,7 @@ git push -u origin main
 ### Exporter les données
 
 **Via console (simple):**
+
 ```javascript
 // F12 → Console
 copy(localStorage.getItem('bugReports'))
@@ -202,6 +219,7 @@ Cherchez et modifiez les `<label>`, `<h2>`, `<p>` directement.
 ### Ajouter une nouvelle langue
 
 Créez un fichier `translations.ts`:
+
 ```typescript
 export const fr = { /* ... */ };
 export const en = { /* ... */ };
@@ -214,6 +232,7 @@ export const en = { /* ... */ };
 ### Où l'application est-elle hébergée ?
 
 **GitHub Pages** (gratuit)
+
 - Domaine : `https://YOUR_USERNAME.github.io/bug-report-app/`
 - Stockage : Limité à 1 GB
 - Bande passante : Illimitée
@@ -226,7 +245,7 @@ export const en = { /* ... */ };
 3. Ajouter le domaine personnalisé
 4. Configurer les DNS du registraire
 
-Voir : https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site
+Voir : <https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site>
 
 ### Alternatives à GitHub Pages
 
@@ -242,24 +261,30 @@ Pour migrer : voir SETUP_CHECKLIST.md
 ## 🐛 Résolution de problèmes courants
 
 ### "npm: command not found"
+
 → Installer Node.js depuis nodejs.org
 
 ### "Port 5173 already in use"
+
 → `npm run dev -- --port 3000`
 
 ### Les données disparaissent
+
 → Normal en dev (localStorage). Actualisez la page, elles restent.
 
 ### GitHub Pages affiche une page blanche
+
 → Vider le cache (Ctrl+Shift+Delete)
 → Attendre 5 min après le push
 → Vérifier le workflow dans Actions
 
 ### Erreur "404 not found" en production
+
 → Vérifier `vite.config.ts` ligne: `base: '/bug-report-app/'`
 → Doit correspondre exactement au nom du repo
 
 ### Je n'arrive pas à clôturer les rapports
+
 → Vous devez être "mAx" ou "ThO"
 → L'app sauvegarde le prénom en localStorage
 
@@ -270,16 +295,19 @@ Pour migrer : voir SETUP_CHECKLIST.md
 ### Si ça ne marche pas
 
 **Étape 1** : Vérifier les logs
+
 ```bash
 F12 → Console → chercher les erreurs rouges
 ```
 
 **Étape 2** : Vérifier le workflow GitHub
+
 ```
 GitHub → Repo → Actions → voir le déploiement
 ```
 
 **Étape 3** : Nettoyer et réessayer
+
 ```bash
 npm cache clean --force
 rm -rf node_modules package-lock.json
@@ -288,6 +316,7 @@ npm run dev
 ```
 
 ### Contacter du support
+
 - Lire la doc : README.md
 - Chercher dans Stack Overflow
 - Poster dans r/reactjs ou r/github
@@ -328,17 +357,20 @@ Avant de dire "c'est prêt":
 ## 🎯 Prochaines étapes
 
 ### Jour 1 (Déploiement)
+
 1. Suivez QUICKSTART.md
 2. Testez l'application en local
 3. Déployez sur GitHub
 4. Partagez le lien avec l'équipe
 
 ### Semaine 1 (Utilisation)
+
 1. Les utilisateurs créent leurs premiers rapports
 2. Collectez du feedback
 3. Corrigez les bugs mineurs
 
 ### Mois 1 (Optimisation)
+
 1. Ajoutez la synchronisation GitHub (optionnel)
 2. Personnalisez les couleurs/texte si besoin
 3. Configurez les sauvegardes régulières
@@ -346,7 +378,7 @@ Avant de dire "c'est prêt":
 
 ---
 
-## 🎉 Vous êtes prêt !
+## 🎉 Vous êtes prêt
 
 Tout ce dont vous avez besoin est dans ce dossier :
 
@@ -355,11 +387,13 @@ Tout ce dont vous avez besoin est dans ce dossier :
 ```
 
 **Fichiers à utiliser:**
+
 - 📱 Développement : `src/BugReportApp.tsx`, `main.tsx`, etc.
 - 📚 Installation : `QUICKSTART.md`, `SETUP_CHECKLIST.md`
 - 🔧 Technique : `README.md`, `DATA_MANAGEMENT.md`
 
 **Points clés à retenir:**
+
 1. Node.js est obligatoire
 2. GitHub gratuit pour héberger
 3. Données en localStorage par défaut
@@ -375,6 +409,7 @@ A: Oui ! Tous les fichiers sont éditables. Voir README.md
 
 **Q: Comment ajouter plus d'admins ?**
 A: Modifier ligne ~140 de BugReportApp.tsx:
+
 ```typescript
 const isAdmin = username === 'mAx' || username === 'ThO' || username === 'NOUVEAU';
 ```
@@ -396,7 +431,7 @@ A: Voir DATA_MANAGEMENT.md, section "Exporter les données"
 
 ---
 
-## 🚀 Commencez maintenant !
+## 🚀 Commencez maintenant
 
 ```bash
 # Étape 1
