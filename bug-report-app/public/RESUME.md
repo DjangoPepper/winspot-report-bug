@@ -2,7 +2,7 @@
 
 ## 🎯 Qu'avez-vous reçu ?
 
-Une **application web React/TypeScript complète** pour gérer les déclarations de bugs de votre système de stockage métallurgique, publiable sur GitHub Pages.
+Une **application web React/TypeScript complète** pour gérer les déclarations de bugs de votre système de stockage métallurgique, configurée pour AWS.
 
 ### ✨ Caractéristiques principales
 
@@ -11,7 +11,7 @@ Une **application web React/TypeScript complète** pour gérer les déclarations
 ✅ **Clôture des rapports** (support/direction)  
 ✅ **Interface responsive** (tablette + PC)  
 ✅ **Stockage local** (localStorage) + option de synchronisation GitHub  
-✅ **Déploiement gratuit** sur GitHub Pages  
+✅ **Hébergement AWS** sur stepe.click/bugs  
 ✅ **Design professionnel** adapté à l'industrie  
 
 ---
@@ -29,11 +29,9 @@ APPLICATION
 │   └── main.tsx                ← Point d'entrée React
 ├── index.html                  ← Page HTML
 ├── vite.config.ts              ← Configuration Vite
-├── tsconfig.json               ← Configuration TypeScript
-├── tsconfig.node.json          ← Config TypeScript (Node)
-├── package.json                ← Dépendances npm
-
-DÉPLOIEMENT GITHUB
+├── tsconfig.json               ← Configuration TypeScript (pour le projet)
+├── tsconfig.node.json          ← Configuration TypeScript (pour Node.js, ex: Vite)
+├── package.json                ← Dépendances npm et scripts
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml          ← Actions automatique de déploiement
@@ -89,7 +87,7 @@ git remote add origin https://github.com/VOUS/bug-report-app.git
 git add .
 git commit -m "Initial commit"
 git push -u origin main
-# Attendre 2 min et visiter https://VOUS.github.io/bug-report-app/
+# Déployer le dossier dist/ sur AWS sous /bugs/
 ```
 
 ⏱️ **Total : ~15 minutes pour être en production**

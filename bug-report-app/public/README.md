@@ -9,7 +9,7 @@ Application web React/TypeScript pour gérer les déclarations de bugs de l'inte
 - ✅ **Clôture des rapports** : Seuls les admins peuvent clôturer, signés "support" ou "direction"
 - ✅ **Données structurées** : Chantier, Transporteur, Lieu, Zone, Type de bug, Sévérité, etc.
 - ✅ **Stockage local** : Les données sont sauvegardées automatiquement en localStorage
-- ✅ **Déploiement sur GitHub Pages** : Gratuit, facile à mettre à jour
+- ✅ **Hébergement AWS** : Déployé sur stepe.click/bugs
 - ✅ **Design industriel** : Interface claire et professionnelle
 
 ## 📋 Champs de formulaire
@@ -84,12 +84,8 @@ npm run deploy
 
 Cela crée une version optimisée et la déploie sur GitHub Pages.
 
-### 6. Configuration GitHub Pages
-
-1. Allez dans les **Settings** de votre repo GitHub
-2. Allez dans **Pages** (section sur la gauche)
-3. Sélectionnez **Branch: gh-pages** comme source
-4. L'application sera disponible à : `https://yourusername.github.io/bug-report-repo/`
+### 6. Configuration AWS (S3/CloudFront)
+L'application est configurée pour être servie à l'adresse : `https://stepe.click/bugs/`
 
 ## 💾 Stockage des données
 
