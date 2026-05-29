@@ -229,28 +229,27 @@ export const en = { /* ... */ };
 
 ### Où l'application est-elle hébergée ?
 
-**GitHub Pages** (gratuit)
+**AWS S3 + CloudFront**
 
-- Domaine : `https://YOUR_USERNAME.github.io/bug-report-app/`
-- Stockage : Limité à 1 GB
-- Bande passante : Illimitée
-- HTTPS : Automatique
+- Domaine : `https://stepe.click/bugs/`
+- Bucket S3 : `s3://steppe/bugs`
+- Distribution : via CloudFront (HTTPS automatique)
+- Déploiement : `npm run deploy`
 
 ### Et si je veux un domaine personnalisé ?
 
-1. Acheter un domaine (ex: monentreprise.com)
-2. Aller à Settings → Pages
-3. Ajouter le domaine personnalisé
-4. Configurer les DNS du registraire
+1. Le domaine `stepe.click` est déjà configuré
+2. Gérer le certificat via AWS Certificate Manager (ACM)
+3. Associer le domaine à la distribution CloudFront
+4. Configurer les DNS (Route 53 ou registraire)
 
-Voir : <https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site>
+Voir : <https://docs.aws.amazon.com/cloudfront/>
 
-### Alternatives à GitHub Pages
+### Alternatives
 
-- **Vercel** (gratuit aussi)
-- **Netlify** (gratuit aussi)
-- **Heroku** (payant maintenant)
-- **AWS Amplify** (quasi-gratuit)
+- **Vercel** (gratuit)
+- **Netlify** (gratuit)
+- **AWS Amplify** (intégration AWS native)
 
 Pour migrer : voir SETUP_CHECKLIST.md
 
@@ -270,16 +269,16 @@ Pour migrer : voir SETUP_CHECKLIST.md
 
 → Normal en dev (localStorage). Actualisez la page, elles restent.
 
-### GitHub Pages affiche une page blanche
+### Page blanche en production
 
 → Vider le cache (Ctrl+Shift+Delete)
-→ Attendre 5 min après le push
-→ Vérifier le workflow dans Actions
+→ Attendre quelques minutes (propagation CloudFront) après `npm run deploy`
+→ Au besoin, invalider le cache CloudFront
 
 ### Erreur "404 not found" en production
 
-→ Vérifier `vite.config.ts` ligne: `base: '/bug-report-app/'`
-→ Doit correspondre exactement au nom du repo
+→ Vérifier `vite.config.ts` ligne: `base: '/bugs/'`
+→ Doit correspondre au chemin S3/CloudFront
 
 ### Je n'arrive pas à clôturer les rapports
 
@@ -298,10 +297,10 @@ Pour migrer : voir SETUP_CHECKLIST.md
 F12 → Console → chercher les erreurs rouges
 ```
 
-**Étape 2** : Vérifier le workflow GitHub
+**Étape 2** : Vérifier le déploiement AWS
 
-```
-GitHub → Repo → Actions → voir le déploiement
+```bash
+aws s3 ls s3://steppe/bugs/
 ```
 
 **Étape 3** : Nettoyer et réessayer
@@ -341,10 +340,10 @@ Avant de dire "c'est prêt":
 ✅ Application locale fonctionne (npm run dev)
 ✅ Formulaire valide accepte un rapport
 ✅ Données sauvegardées en localStorage
-✅ GitHub repo créé et pushé
-✅ Workflow GitHub Actions réussit
-✅ GitHub Pages active et configurée
-✅ Application accessible à https://VOUS.github.io/bug-report-app/
+✅ Code GitHub créé et pushé
+✅ AWS CLI configuré
+✅ npm run deploy réussit (sync vers s3://steppe/bugs)
+✅ Application accessible à https://stepe.click/bugs/
 ✅ Admin (mAx/ThO) peut clôturer les rapports
 ✅ Interface responsive sur mobile + PC
 ✅ Lien partagé avec l'équipe
@@ -393,10 +392,10 @@ Tout ce dont vous avez besoin est dans ce dossier :
 **Points clés à retenir:**
 
 1. Node.js est obligatoire
-2. GitHub gratuit pour héberger
+2. Hébergement sur AWS S3 + CloudFront (stepe.click/bugs)
 3. Données en localStorage par défaut
 4. Admins: mAx et ThO seulement
-5. Déploiement automatique via GitHub Actions
+5. Déploiement via `npm run deploy`
 
 ---
 
@@ -419,7 +418,7 @@ A: localStorage du navigateur. Voir DATA_MANAGEMENT.md pour sync GitHub.
 A: Oui ! L'interface est responsive (mobile, tablette, desktop).
 
 **Q: Comment partager avec mon équipe ?**
-A: Copier/coller le lien GitHub Pages: `https://VOUS.github.io/bug-report-app/`
+A: Copier/coller le lien: `https://stepe.click/bugs/`
 
 **Q: Que faire si j'oublie mon mot de passe ?**
 A: Il n'y a pas de mot de passe. Juste un prénom d'utilisateur.
@@ -443,12 +442,15 @@ npm run dev
 
 # Étape 4
 git add . && git commit -m "Initial" && git push
+
+# Étape 5 : déployer sur AWS
+npm run deploy
 ```
 
 **Bienvenue ! Vous avez une application professionnelle en quelques minutes.** 🎊
 
 ---
 
-*Application créée avec React, TypeScript, Vite, et GitHub Pages*  
+*Application créée avec React, TypeScript, Vite, et hébergée sur AWS (S3/CloudFront)*  
 *Optimisée pour stockage métallurgique - Dunkerque*  
 *Support: mAx, ThO (admins)*

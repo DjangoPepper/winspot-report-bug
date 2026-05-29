@@ -82,7 +82,7 @@ npm run build
 npm run deploy
 ```
 
-Cela crée une version optimisée et la déploie sur GitHub Pages.
+Cela crée une version optimisée (`dist/`) et la synchronise sur AWS S3 (`s3://steppe/bugs`).
 
 ### 6. Configuration AWS (S3/CloudFront)
 L'application est configurée pour être servie à l'adresse : `https://stepe.click/bugs/`
@@ -204,7 +204,8 @@ Cela crée des colonnes fluides qui s'ajustent à la taille de l'écran.
 
 ### Erreur lors du déploiement
 ```bash
-npm install gh-pages --save-dev
+# Vérifiez que l'AWS CLI est configurée
+aws sts get-caller-identity
 npm run deploy
 ```
 

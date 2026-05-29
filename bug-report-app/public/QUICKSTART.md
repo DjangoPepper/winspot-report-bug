@@ -26,7 +26,7 @@ git init
 
 ## Étape 2 : Structure des dossiers
 
-```.
+```text
 bug-report-app/
 ├── src/
 │   ├── BugReportApp.tsx
@@ -92,40 +92,38 @@ git commit -m "Initial commit: Bug report application"
 git push -u origin main
 ```
 
-## Étape 5 : Configurer le déploiement GitHub Pages
+## Étape 5 : Configurer le déploiement AWS (S3)
 
-### 1. Créer le dossier `.github/workflows`
-
-```bash
-mkdir -p .github/workflows
-```
-
-### 2. Créer le fichier `deploy.yml`
-
-Copiez le contenu fourni dans `.github/workflows/deploy.yml`
-
-### 3. Pousser sur GitHub
+### 1. Installer et configurer l'AWS CLI
 
 ```bash
-git add .github/
-git commit -m "Add GitHub Actions workflow"
-git push
+# Installer l'AWS CLI (voir https://aws.amazon.com/cli/)
+aws configure   # Renseigner Access Key, Secret Key, région
 ```
 
-## Étape 6 : Configurer GitHub Pages
+### 2. Vérifier le script de déploiement
 
-### 1. Allez sur <https://github.com/YOUR_USERNAME/bug-report-app/settings>
+Le `package.json` contient déjà le script de déploiement vers le bucket S3 :
 
-### 2. Cliquez sur "Pages" (à gauche)
+```json
+"deploy": "npm run build && npm run deploy:s3",
+"deploy:s3": "aws s3 sync dist s3://steppe/bugs --delete --cache-control 'max-age=3600'"
+```
 
-### 3. Sous "Build and deployment"
+## Étape 6 : Déployer sur AWS
 
-- Sélectionnez "GitHub Actions" comme source
+### 1. Lancer le déploiement
 
-### 4. L'application sera disponible à
+```bash
+npm run deploy
+```
 
-   ```.
-   https://YOUR_USERNAME.github.io/bug-report-app/
+### 2. Le build est synchronisé vers le bucket S3 `steppe/bugs`
+
+### 3. L'application est servie (via CloudFront) à
+
+   ```text
+   https://stepe.click/bugs/
    ```
 
 ## Étape 7 : Utilisation de l'application
@@ -189,24 +187,14 @@ copy(localStorage.getItem('bugReports'))
 
 → C'est normal en développement. En production, elles sont sauvegardées en localStorage.
 
-### L'application affiche une page blanche sur GitHub Pages
+### L'application affiche une page blanche en production
 
-→ Attendez quelques minutes après le premier déploiement
-→ Videz le cache du navigateur (Ctrl+Shift+Delete)
+→ Attendez quelques minutes après le déploiement (propagation CloudFront)
+→ Videz le cache du navigateur (Ctrl+Shift+Delete) ou invalidez le cache CloudFront
 
 ### Build fails avec "404 not found"
 
-→ Vérifiez que `vite.config.ts` contient le bon `base: '/bug-report-app/'`
-
-## 📡 Synchroniser avec GitHub (optionnel)
-
-Pour sauvegarder les données directement dans GitHub, modifiez `vite.config.ts` :
-
-```typescript
-base: process.env.NODE_ENV === 'production' 
-  ? '/bug-report-app/' 
-  : '/',
-```
+→ Vérifiez que `vite.config.ts` contient le bon `base: '/bugs/'`
 
 ## 🔄 Mettre à jour après modifications
 
@@ -214,18 +202,19 @@ base: process.env.NODE_ENV === 'production'
 # Faire vos modifications
 # ...
 
-# Ensuite :
+# Ensuite : versionner le code
 git add .
 git commit -m "Description des changements"
 git push
 
-# GitHub Actions construira et déploiera automatiquement
+# Puis redéployer sur AWS
+npm run deploy
 ```
 
 ## 📞 Besoin d'aide ?
 
 1. **Vérifiez la console** : F12 → Console → regardez les erreurs rouges
-2. **Vérifiez les logs GitHub** : Allez dans Actions (sur GitHub)
+2. **Vérifiez le déploiement AWS** : `aws s3 ls s3://steppe/bugs/`
 3. **Redémarrez** : Souvent la solution magique
 
 ---
@@ -234,8 +223,8 @@ git push
 
 Votre application est accessible à :
 
-```.
-https://YOUR_USERNAME.github.io/bug-report-app/
+```text
+https://stepe.click/bugs/
 ```
 
 Partagez ce lien avec votre équipe !

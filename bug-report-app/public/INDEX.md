@@ -11,7 +11,7 @@
 ### Je suis développeur (30 min)
 1. Lire: **`SETUP_CHECKLIST.md`** (Checklist complète)
 2. Suivre les phases 1-6
-3. Déployer sur GitHub Pages
+3. Déployer sur AWS (`npm run deploy`)
 4. Tester en production
 
 ### Je veux tout comprendre (1 heure)
@@ -126,7 +126,7 @@ src/
 
 **Document:**
 1. 📄 SETUP_CHECKLIST.md (section "Phase 5")
-2. 📄 README.md (section "Alternatives à GitHub Pages")
+2. 📄 README.md (section "Alternatives d'hébergement")
 
 **Options:**
 - Vercel (gratuit, recommandé)
@@ -165,7 +165,7 @@ src/
 | Étape 2 | Structure des dossiers | 2 min |
 | Étape 3 | Configurer localement | 5 min |
 | Étape 4 | Créer repo GitHub | 5 min |
-| Étape 5 | Configurer GitHub Pages | 5 min |
+| Étape 5 | Déployer sur AWS | 5 min |
 | Étape 6 | Utilisation de l'application | 3 min |
 | Étape 7 | Personnes personnalisées | 2 min |
 
@@ -313,7 +313,7 @@ Cherchez-vous comment...
 | Exporter les données ? | DATA_MANAGEMENT.md → Section 2 | DATA_MANAGEMENT.md |
 | Synchroniser GitHub ? | DATA_MANAGEMENT.md → Section 4 | DATA_MANAGEMENT.md |
 | Résoudre un problème ? | SETUP_CHECKLIST.md → Phase 8 | SETUP_CHECKLIST.md |
-| Accéder à l'app ? | github.com/VOUS/bug-report-app | (Après déploiement) |
+| Accéder à l'app ? | https://stepe.click/bugs/ | (Après déploiement) |
 
 ---
 
@@ -331,12 +331,12 @@ Cherchez-vous comment...
 
 ## 🚀 MAINTENANT, VOUS ÊTES PRÊT
 
-Tous les fichiers dont vous avez besoin sont dans `/mnt/user-data/outputs/`
+Tous les fichiers dont vous avez besoin sont dans le dossier du projet `bug-report-app/`.
 
 **Prochaines étapes:**
 1. ✅ Télécharger Node.js
 2. ✅ Suivre QUICKSTART.md
-3. ✅ Déployer sur GitHub
+3. ✅ Déployer sur AWS (`npm run deploy`)
 4. ✅ Partager avec votre équipe
 
 **Bonne chance ! 🎉**
@@ -344,5 +344,5 @@ Tous les fichiers dont vous avez besoin sont dans `/mnt/user-data/outputs/`
 ---
 
 *Document généré pour faciliter la navigation*  
-*Tous les fichiers sont dans le même dossier*  
+*Hébergement : AWS S3 + CloudFront — https://stepe.click/bugs/*  
 *Aucun fichier n'est manquant ou caché*

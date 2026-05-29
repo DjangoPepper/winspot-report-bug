@@ -325,7 +325,7 @@ const token = generateSecureToken(); // Généré côté serveur
 const encrypted = encrypt(JSON.stringify(reports), encryptionKey);
 
 // ✅ Utiliser HTTPS toujours
-// (GitHub Pages le fait automatiquement)
+// (CloudFront le fait automatiquement sur stepe.click)
 ```
 
 ---

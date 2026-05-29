@@ -4,7 +4,7 @@
 
 ### Fichiers à créer/copier dans le dossier du projet
 
-```..
+```
 ✅ CRÉER le dossier: src/
    ├── BugReportApp.tsx (copier le fichier)
    └── main.tsx (copier le fichier)
@@ -21,11 +21,11 @@
 
 ✅ CRÉER le dossier: .github/workflows/
    └── deploy.yml (copier le fichier: ".github_workflows_deploy.yml")
-```..
+```
 
 ### Commandes de préparation
 
-```..bash
+```bash
 # 1. Créer le dossier racine du projet
 mkdir bug-report-app
 cd bug-report-app
@@ -39,13 +39,13 @@ mkdir -p .github/workflows
 
 # 4. Copier TOUS les fichiers fournis aux bons emplacements
 # À faire manuellement depuis votre explorateur de fichiers
-```.
+```
 
 ---
 
 ## 🔧 Phase 2 : Configuration Node.js
 
-```.bash
+```bash
 # ✅ Vérifier Node.js est installé
 node --version    # Doit afficher v18 ou plus récent
 npm --version     # Doit afficher 9 ou plus récent
@@ -55,24 +55,24 @@ npm install
 
 # ✅ Vérifier l'installation
 npm list react    # Doit afficher React
-```.
+```
 
 ### En cas d'erreur
 
-```.bash
+```bash
 # Nettoyer les caches
 npm cache clean --force
 rm -rf node_modules package-lock.json
 
 # Réinstaller
 npm install
-```.
+```
 
 ---
 
 ## 🏗️ Phase 3 : Tests locaux
 
-```.bash
+```bash
 # ✅ Démarrer le serveur de développement
 npm run dev
 
@@ -84,17 +84,17 @@ npm run dev
 # - Créez un rapport de test
 # - Vérifiez que les données s'affichent
 # - Fermez le serveur: Ctrl+C
-```.
+```
 
 ### Résoudre les problèmes
 
-```.bash
+```bash
 # Si "Port 5173 already in use"
 npm run dev -- --port 3000
 
 # Si "Module not found"
 npm install
-```.
+```
 
 ---
 
@@ -111,7 +111,7 @@ npm install
 
 ### 4.2 Pousser le code sur GitHub
 
-```.bash
+```bash
 # Dans votre dossier du projet
 git remote add origin https://github.com/YOUR_USERNAME/bug-report-app.git
 
@@ -126,7 +126,7 @@ git commit -m "Initial commit: React bug report application"
 
 # Pousser sur GitHub
 git push -u origin main
-```.
+```
 
 ### Vérifier le push
 
@@ -134,37 +134,38 @@ Allez à votre repo GitHub, vous devez voir tous les fichiers.
 
 ---
 
-## 📡 Phase 5 : Configuration GitHub Pages et Actions
+## 📡 Phase 5 : Configuration AWS (S3 / CloudFront)
 
-### 5.1 Vérifier le workflow
+### 5.1 Configurer l'AWS CLI
 
-1. Allez à votre repo GitHub
-2. Cliquez sur l'onglet **"Actions"**
-3. Vous devez voir le workflow "Deploy to GitHub Pages"
-4. Attendez qu'il finisse (✅ vert)
+```bash
+aws configure                 # Access Key, Secret Key, région
+aws sts get-caller-identity   # Vérifier l'identité
+```
 
-### 5.2 Configurer GitHub Pages
+### 5.2 Vérifier le script de déploiement
 
-1. Allez à **Settings** → **Pages** (menu de gauche)
-2. Sous "Source" ou "Build and deployment"
-3. Sélectionnez **"GitHub Actions"**
-4. ✅ Sauvegardez
+Le `package.json` contient :
 
-### 5.3 Attendre le déploiement
+```bash
+npm run deploy
+# deploy:s3 -> aws s3 sync dist s3://steppe/bugs --delete --cache-control 'max-age=3600'
+```
 
-- La première fois : 2-5 minutes
-- Les fois suivantes : 1-2 minutes
-- Allez à **Actions** pour voir la progression
+### 5.3 Lancer le déploiement
+
+- `npm run deploy` : build Vite (`dist/`) puis `aws s3 sync` vers `steppe/bugs`
+- Propagation CloudFront : quelques minutes
 
 ### 5.4 Accéder à votre application
 
 Votre app est maintenant à :
 
-```.
-https://YOUR_USERNAME.github.io/bug-report-app/
-```.
+```text
+https://stepe.click/bugs/
+```
 
-Testez la URL dans le navigateur !
+Testez l'URL dans le navigateur !
 
 ---
 
@@ -172,7 +173,7 @@ Testez la URL dans le navigateur !
 
 ### Workflow standard pour chaque modification
 
-```.bash
+```bash
 # 1. Faire vos modifications dans l'éditeur
 # (modifier les fichiers dans src/, index.html, etc.)
 
@@ -186,15 +187,15 @@ npm run dev
 git add .
 git commit -m "Description claire de vos changements"
 
-# 5. Pousser sur GitHub
+# 5. Pousser le code sur GitHub
 git push
 
-# 6. GitHub Actions déploie automatiquement
-# Allez dans l'onglet "Actions" pour suivre
+# 6. Déployer sur AWS
+npm run deploy
 
 # 7. Vérifier sur votre site live
-# Attendez 1-2 minutes, puis rafraîchissez https://YOUR_USERNAME.github.io/bug-report-app/
-```.
+# Attendez quelques minutes (CloudFront), puis rafraîchissez https://stepe.click/bugs/
+```
 
 ---
 
@@ -202,16 +203,16 @@ git push
 
 ### Configuration initiale
 
-```.
-1. Ouvrez https://YOUR_USERNAME.github.io/bug-report-app/
+```
+1. Ouvrez https://stepe.click/bugs/
 2. Entrez votre prénom (ex: mAx, ThO, Jean)
 3. Cliquez "Valider"
 4. Votre identité est sauvegardée localement
-```.
+```
 
 ### Créer un rapport
 
-```.
+```
 1. Cliquez "➕ Nouveau Rapport"
 2. Remplissez obligatoirement :
    ✓ Chantier
@@ -222,19 +223,19 @@ git push
    ✓ Description
 3. Complétez les détails optionnels
 4. Cliquez "✓ Soumettre le rapport"
-```.
+```
 
 ### Consulter les rapports
 
-```.
+```
 1. Cliquez "📋 Liste des Rapports"
 2. Cliquez sur un rapport pour voir les détails
 3. Cliquez "← Retour" pour revenir à la liste
-```.
+```
 
 ### Clôturer un rapport (admin only)
 
-```.
+```
 ⚙️ Seulement si vous êtes mAx ou ThO
 
 1. Cliquez sur un rapport ouvert
@@ -242,7 +243,7 @@ git push
 3. Choisissez "Support" ou "Direction"
 4. Cliquez "Clôturer"
 5. Le rapport devient gris et apparaît en bas de la liste
-```.
+```
 
 ---
 
@@ -256,7 +257,7 @@ git push
 
 ### Sauvegarder régulièrement
 
-```.bash
+```bash
 # Chaque mois, créez une sauvegarde
 cd bug-report-app
 
@@ -269,18 +270,18 @@ git push origin backup-2024-01
 
 # Revenir à main
 git checkout main
-```.
+```
 
 ### Mettre à jour les dépendances
 
-```.bash
+```bash
 # Mensuellement
 npm outdated     # Voir les updates disponibles
 npm update       # Mettre à jour
 git add .
 git commit -m "Update dependencies"
 git push
-```.
+```
 
 ---
 
@@ -288,20 +289,20 @@ git push
 
 ### L'application affiche une page blanche
 
-```.bash
+```bash
 # 1. Videz le cache
 Ctrl+Shift+Delete (dans le navigateur)
 
 # 2. Vérifiez les erreurs
 F12 → Console → cherchez les erreurs rouges
 
-# 3. Vérifiez le workflow GitHub Actions
-# Actions → vérifiez le déploiement
-```.
+# 3. Vérifiez le déploiement AWS
+# aws s3 ls s3://steppe/bugs/  (et l'invalidation CloudFront)
+```
 
 ### Les données disparaissent
 
-```.bash
+```bash
 # C'est normal en développement (localStorage)
 # En production : les données persistent
 
@@ -309,20 +310,20 @@ F12 → Console → cherchez les erreurs rouges
 npm run dev
 # Entrez un prénom et créez un rapport
 # Fermez le navigateur et réouvrez : les données restent
-```.
+```
 
 ### Erreur "404 not found" en production
 
-```.
+```
 ❌ Problème : mauvais chemin de base
 
 ✅ Solution : Vérifiez vite.config.ts
-   base: '/bug-report-app/'  // Doit correspondre à votre repo
-```.
+   base: '/bugs/'  // Doit correspondre au chemin S3/CloudFront
+```
 
 ### Le build échoue
 
-```.bash
+```bash
 # 1. Vérifiez les erreurs TypeScript
 npm run build
 
@@ -331,22 +332,23 @@ npm run build
 # 3. Testez localement
 npm run dev
 
-# 4. Poussez sur GitHub
+# 4. Poussez sur GitHub puis redéployez
 git add .
 git commit -m "Fix build errors"
 git push
-```.
+npm run deploy
+```
 
 ---
 
-## 📞 Support techniques
+## 📞 Support technique
 
 ### Ressources utiles
 
 - **Vite docs** : <https://vitejs.dev/>
 - **React docs** : <https://react.dev/>
-- **GitHub Pages docs** : <https://pages.github.com/>
-- **GitHub Actions docs** : <https://docs.github.com/en/actions>
+- **AWS S3 docs** : <https://docs.aws.amazon.com/s3/>
+- **AWS CloudFront docs** : <https://docs.aws.amazon.com/cloudfront/>
 
 ### Communauté
 
@@ -360,20 +362,20 @@ git push
 
 Avant de dire "c'est prêt" :
 
-```.
+```
 ✅ npm install réussit
 ✅ npm run dev fonctionne (http://localhost:5173)
 ✅ Application affichée correctement en local
 ✅ GitHub repo créé
 ✅ Code pushé sur GitHub (main)
-✅ Workflow déploiement visible dans Actions
-✅ GitHub Pages configuré
-✅ Application accessible sur https://YOUR_USERNAME.github.io/bug-report-app/
+✅ AWS CLI configuré (aws configure)
+✅ npm run deploy réussit (sync vers s3://steppe/bugs)
+✅ Application accessible sur https://stepe.click/bugs/
 ✅ Formulaire fonctionne en production
 ✅ Données sauvegardées en localStorage
 ✅ Admin peut clôturer les rapports (mAx/ThO)
 ✅ Lien partagé avec l'équipe
-```.
+```
 
 ---
 
@@ -381,6 +383,6 @@ Avant de dire "c'est prêt" :
 
 Votre application est maintenant en production et prête à être utilisée par votre équipe.
 
-Pour toute modification future : **modifiez → testez → commitez → poussez → GitHub fait le reste**
+Pour toute modification future : **modifiez → testez → commitez → poussez → `npm run deploy`**
 
 Bonne utilisation ! 🚀
