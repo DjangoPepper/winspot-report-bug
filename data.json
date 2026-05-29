@@ -62,6 +62,14 @@
       {
         "status": "transmis",
         "timestamp": "2026-05-29T20:24:57.833Z"
+      },
+      {
+        "status": "résolus",
+        "timestamp": "2026-05-29T20:24:59.279Z"
+      },
+      {
+        "status": "transmis",
+        "timestamp": "2026-05-29T20:24:59.781Z"
       }
     ],
     "closed": false
