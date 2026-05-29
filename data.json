@@ -1,30 +1,38 @@
 [
   {
-    "id": "1780022520314",
-    "timestamp": "2026-05-29T02:42:00.314Z",
-    "username": "fred",
-    "interface": "PdA",
+    "id": "1780085393793",
+    "timestamp": "2026-05-29T20:10:37.013Z",
+    "username": "gerard",
+    "interface": "PC",
     "chantier": "Déchargement",
-    "transporteur": "Train Mardyck",
+    "transporteur": "Camion",
     "lieu": "Escaut",
-    "zone": "Entrepot",
-    "moduleUI": "pda dechargement rame ",
-    "titre": "28 05 2026 erreur bip dechargement bobines mdk ",
-    "description": "28 05 2026 erreur bip dechargement bobines mdk ",
+    "zone": "Parc",
+    "moduleUI": "",
+    "titre": "titre",
+    "description": "description",
     "etapes": [
-      "pda ",
-      "rame 2805r01",
-      "entrepot",
-      "2805r01",
-      "pont2"
+      "",
+      "",
+      "",
+      "",
+      ""
     ],
-    "resultatAttendu": "integration marchandise en stok",
-    "resultatReel": "bip erreur marchandise non dispo",
-    "typeBug": "Message erreur",
-    "severite": "Critique",
-    "frequence": "À chaque fois",
-    "affecteAutres": "Oui",
-    "observations": "bobines non integrés au systeme",
+    "resultatAttendu": "",
+    "resultatReel": "",
+    "typeBug": "",
+    "severite": "Majeur",
+    "frequence": "Souvent",
+    "affecteAutres": "Non",
+    "observations": "",
+    "photos": [],
+    "status": "déclarer",
+    "statusHistory": [
+      {
+        "status": "déclarer",
+        "timestamp": "2026-05-29T20:09:53.792Z"
+      }
+    ],
     "closed": false
   }
 ]
