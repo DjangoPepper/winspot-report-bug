@@ -3,18 +3,21 @@
 ## 🎯 PAR OÙ COMMENCER ?
 
 ### Je suis pressé (5 min)
+
 1. Lire: **`QUICKSTART.md`** (Démarrage rapide)
 2. Installer Node.js
 3. Suivre les étapes 1-7 dans QUICKSTART.md
 4. C'est prêt !
 
 ### Je suis développeur (30 min)
+
 1. Lire: **`SETUP_CHECKLIST.md`** (Checklist complète)
 2. Suivre les phases 1-6
 3. Déployer sur AWS (`npm run deploy`)
 4. Tester en production
 
 ### Je veux tout comprendre (1 heure)
+
 1. Lire: **`RESUME.md`** (Vue d'ensemble)
 2. Lire: **`README.md`** (Docs technique)
 3. Lire: **`DATA_MANAGEMENT.md`** (Gestion des données)
@@ -26,7 +29,7 @@
 
 ### 📱 CODE SOURCE (À mettre dans le dossier `src/`)
 
-```
+```text
 src/
 ├── BugReportApp.tsx          [2000 lignes] Composant principal React
 │   └── Contient : Formulaire, Liste, Détails, Logique
@@ -35,7 +38,7 @@ src/
 
 ### 🏗️ CONFIGURATION & BUILD (À la racine du projet)
 
-```
+```text
 ├── index.html                [30 lignes] Page HTML principale
 ├── package.json              [25 lignes] Dépendances npm & scripts
 ├── vite.config.ts            [15 lignes] Configuration Vite
@@ -46,7 +49,7 @@ src/
 
 ### 🌐 DÉPLOIEMENT GITHUB
 
-```
+```text
 .github/
 └── workflows/
     └── deploy.yml            [35 lignes] GitHub Actions pour auto-déployer
@@ -54,7 +57,7 @@ src/
 
 ### 📖 DOCUMENTATION
 
-```
+```text
 ├── RESUME.md                 [500 lignes] Vue d'ensemble + FAQ
 ├── QUICKSTART.md             [150 lignes] Démarrage rapide (5 min)
 ├── SETUP_CHECKLIST.md        [350 lignes] Checklist installation complète
@@ -69,10 +72,12 @@ src/
 ### 👤 Je suis utilisateur (pas développeur)
 
 **Documents essentiels:**
+
 1. 📄 QUICKSTART.md (section "Utilisation de l'application")
 2. 📄 README.md (section "👥 Rôles utilisateurs")
 
 **Vous saurez:**
+
 - ✅ Comment entrer en tant qu'utilisateur
 - ✅ Comment créer un rapport
 - ✅ Comment consulter les rapports
@@ -83,12 +88,14 @@ src/
 ### 👨‍💻 Je suis développeur/IT
 
 **Documents essentiels (dans cet ordre):**
+
 1. 📄 RESUME.md (5-10 min overview)
 2. 📄 QUICKSTART.md (30 min setup)
 3. 📄 SETUP_CHECKLIST.md (checklist détaillée)
 4. 💻 Lire le code dans `src/BugReportApp.tsx`
 
 **Fichiers à modifier:**
+
 - `src/BugReportApp.tsx` - Logique et UI
 - `package.json` - Dépendances
 - `vite.config.ts` - Configuration build
@@ -98,9 +105,11 @@ src/
 ### 🔧 Je veux synchroniser les données avec GitHub
 
 **Document essentiel:**
+
 1. 📄 DATA_MANAGEMENT.md (sections 4-6)
 
 **Vous y apprendrez:**
+
 - ✅ Exporter les données
 - ✅ Intégrer GitHub API
 - ✅ Utiliser Firebase/Supabase
@@ -111,10 +120,12 @@ src/
 ### 🎨 Je veux personnaliser l'application
 
 **Documents:**
+
 1. 📄 README.md (section "Personnalisation")
 2. 💻 Fichier: `src/BugReportApp.tsx` (chercher "backgroundColor")
 
 **Vous pouvez changer:**
+
 - ✅ Couleurs
 - ✅ Textes
 - ✅ Champs du formulaire
@@ -125,10 +136,12 @@ src/
 ### 🚀 Je veux déployer sur un autre hébergeur
 
 **Document:**
+
 1. 📄 SETUP_CHECKLIST.md (section "Phase 5")
 2. 📄 README.md (section "Alternatives d'hébergement")
 
 **Options:**
+
 - Vercel (gratuit, recommandé)
 - Netlify (gratuit)
 - AWS Amplify (quasi-gratuit)
@@ -138,6 +151,7 @@ src/
 ## 📚 CONTENU DÉTAILLÉ PAR FICHIER
 
 ### 🔵 RESUME.md
+
 **Durée:** 10 min | **Public:** Tout le monde
 
 | Section | Contenu |
@@ -157,6 +171,7 @@ src/
 ---
 
 ### 🟢 QUICKSTART.md
+
 **Durée:** 30 min | **Public:** Développeurs / Admins IT
 
 | Section | Contenu | Temps |
@@ -174,6 +189,7 @@ src/
 ---
 
 ### 🟣 SETUP_CHECKLIST.md
+
 **Durée:** 1 heure | **Public:** Développeurs
 
 | Phase | Étapes | Durée |
@@ -192,6 +208,7 @@ src/
 ---
 
 ### 🟠 DATA_MANAGEMENT.md
+
 **Durée:** 40 min | **Public:** Devs avancés
 
 | Section | Contenu |
@@ -210,6 +227,7 @@ src/
 ---
 
 ### 🔴 README.md
+
 **Durée:** 30 min | **Public:** Tout le monde
 
 | Section | Contenu |
@@ -227,6 +245,7 @@ src/
 ---
 
 ### 💻 BugReportApp.tsx
+
 **Durée:** 1-2 heures | **Public:** Développeurs
 
 **Structure du code:**
@@ -242,6 +261,7 @@ src/
 | 601-700 | Footer | 100 lignes |
 
 **À modifier pour:**
+
 - Changer les couleurs (chercher "backgroundColor")
 - Ajouter des champs (modifier interface + formulaire)
 - Changer le texte (chercher et remplacer)
@@ -270,7 +290,8 @@ src/
 Selon votre objectif:
 
 ### Pour déployer rapidement ✨
-```
+
+```text
 ☐ Lire RESUME.md (5 min)
 ☐ Lire QUICKSTART.md (30 min)
 ☐ Suivre les étapes 1-5
@@ -279,7 +300,8 @@ Selon votre objectif:
 ```
 
 ### Pour comprendre complètement 🎓
-```
+
+```text
 ☐ Lire RESUME.md (5 min)
 ☐ Lire README.md (20 min)
 ☐ Lire SETUP_CHECKLIST.md (30 min)
@@ -289,7 +311,8 @@ Selon votre objectif:
 ```
 
 ### Pour maintenir en production 🔧
-```
+
+```text
 ☐ Lire RESUME.md (5 min)
 ☐ Lire SETUP_CHECKLIST.md (Phase 8)
 ☐ Lire DATA_MANAGEMENT.md (Sections 6-8)
@@ -313,11 +336,11 @@ Cherchez-vous comment...
 | Exporter les données ? | DATA_MANAGEMENT.md → Section 2 | DATA_MANAGEMENT.md |
 | Synchroniser GitHub ? | DATA_MANAGEMENT.md → Section 4 | DATA_MANAGEMENT.md |
 | Résoudre un problème ? | SETUP_CHECKLIST.md → Phase 8 | SETUP_CHECKLIST.md |
-| Accéder à l'app ? | https://stepe.click/bugs/ | (Après déploiement) |
+| Accéder à l'app ? | <https://stepe.click/bugs/> | (Après déploiement) |
 
 ---
 
-## 📞 OÙ TROUVER...
+## 📞 OÙ TROUVER
 
 **Information générale:** README.md ou RESUME.md  
 **Installation:** QUICKSTART.md ou SETUP_CHECKLIST.md  
@@ -334,6 +357,7 @@ Cherchez-vous comment...
 Tous les fichiers dont vous avez besoin sont dans le dossier du projet `bug-report-app/`.
 
 **Prochaines étapes:**
+
 1. ✅ Télécharger Node.js
 2. ✅ Suivre QUICKSTART.md
 3. ✅ Déployer sur AWS (`npm run deploy`)
@@ -344,5 +368,5 @@ Tous les fichiers dont vous avez besoin sont dans le dossier du projet `bug-repo
 ---
 
 *Document généré pour faciliter la navigation*  
-*Hébergement : AWS S3 + CloudFront — https://stepe.click/bugs/*  
+*Hébergement : AWS S3 + CloudFront — <https://stepe.click/bugs/>*  
 *Aucun fichier n'est manquant ou caché*

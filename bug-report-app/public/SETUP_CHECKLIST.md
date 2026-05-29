@@ -4,7 +4,7 @@
 
 ### Fichiers à créer/copier dans le dossier du projet
 
-```
+```text
 ✅ CRÉER le dossier: src/
    ├── BugReportApp.tsx (copier le fichier)
    └── main.tsx (copier le fichier)
@@ -203,7 +203,7 @@ npm run deploy
 
 ### Configuration initiale
 
-```
+```text
 1. Ouvrez https://stepe.click/bugs/
 2. Entrez votre prénom (ex: mAx, ThO, Jean)
 3. Cliquez "Valider"
@@ -212,7 +212,7 @@ npm run deploy
 
 ### Créer un rapport
 
-```
+```text
 1. Cliquez "➕ Nouveau Rapport"
 2. Remplissez obligatoirement :
    ✓ Chantier
@@ -227,7 +227,7 @@ npm run deploy
 
 ### Consulter les rapports
 
-```
+```text
 1. Cliquez "📋 Liste des Rapports"
 2. Cliquez sur un rapport pour voir les détails
 3. Cliquez "← Retour" pour revenir à la liste
@@ -235,7 +235,7 @@ npm run deploy
 
 ### Clôturer un rapport (admin only)
 
-```
+```text
 ⚙️ Seulement si vous êtes mAx ou ThO
 
 1. Cliquez sur un rapport ouvert
@@ -314,7 +314,7 @@ npm run dev
 
 ### Erreur "404 not found" en production
 
-```
+```text
 ❌ Problème : mauvais chemin de base
 
 ✅ Solution : Vérifiez vite.config.ts
@@ -362,7 +362,7 @@ npm run deploy
 
 Avant de dire "c'est prêt" :
 
-```
+```text
 ✅ npm install réussit
 ✅ npm run dev fonctionne (http://localhost:5173)
 ✅ Application affichée correctement en local

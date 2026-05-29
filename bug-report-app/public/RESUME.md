@@ -20,7 +20,7 @@ Une **application web React/TypeScript complète** pour gérer les déclarations
 
 ### Structure complète
 
-```
+```text
 /mnt/user-data/outputs/
 
 APPLICATION
@@ -51,13 +51,13 @@ DOCUMENTATION
 
 ### 1️⃣ Télécharger Node.js (2 min)
 
-```
+```text
 https://nodejs.org → Télécharger LTS
 ```
 
 ### 2️⃣ Préparer les fichiers (3 min)
 
-```
+```text
 Créer dossier: bug-report-app
 Créer dossier: src/ dedans
 Copier TOUS les fichiers aux bons endroits (voir SETUP_CHECKLIST.md)
@@ -74,7 +74,7 @@ npm run dev
 
 ### 4️⃣ Créer repository GitHub (2 min)
 
-```
+```text
 https://github.com/new
 Créer repo "bug-report-app"
 ```
@@ -336,7 +336,7 @@ npm run dev
 
 Avant de dire "c'est prêt":
 
-```
+```text
 ✅ Application locale fonctionne (npm run dev)
 ✅ Formulaire valide accepte un rapport
 ✅ Données sauvegardées en localStorage
@@ -379,7 +379,7 @@ Avant de dire "c'est prêt":
 
 Tout ce dont vous avez besoin est dans ce dossier :
 
-```
+```text
 /mnt/user-data/outputs/ 
 ```
 
