@@ -28,3 +28,9 @@ dist-ssr
 *.sln
 *.sw?
 *.zip
+
+# AWS backend helpers (local only — never commit the shared secret or data dumps)
+aws/.app-secret
+aws/data-from-github.json
+aws/*.output
+aws/out.json

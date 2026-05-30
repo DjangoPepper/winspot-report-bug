@@ -1,138 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
-// GitHub synchronization
-const GITHUB_TOKEN = (import.meta as any).env.VITE_GITHUB_TOKEN || '';
-const GITHUB_REPO = (import.meta as any).env.VITE_GITHUB_REPO || 'DjangoPepper/winspot-report-bug';
-
-async function saveToGitHub(reports: BugReport[]): Promise<boolean> {
-  if (!GITHUB_TOKEN) {
-    console.warn('GitHub token not configured');
-    return false;
-  }
-
-  try {
-    const content = btoa(JSON.stringify(reports, null, 2));
-    let sha: string | undefined;
-
-    // Get current file SHA if it exists
-    try {
-      const getResponse = await fetch(
-        `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`,
-        {
-          headers: {
-            'Authorization': `token ${GITHUB_TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        }
-      );
-      if (getResponse.ok) {
-        const data = await getResponse.json();
-        sha = data.sha;
-      }
-    } catch (err) {
-      console.log('File does not exist yet, will create it');
-    }
-
-    // Upload/update file
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/contents/data.json`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify({
-          message: `Update bug reports - ${new Date().toLocaleString('fr-FR')}`,
-          content: content,
-          sha: sha,
-          branch: 'main'
-        })
-      }
-    );
-
-    if (!response.ok) {
-      console.error('GitHub sync failed:', await response.text());
-      return false;
-    }
-
-    console.log('Successfully synced to GitHub');
-    return true;
-  } catch (err) {
-    console.error('GitHub sync error:', err);
-    return false;
-  }
-}
-
-async function createGitHubIssue(report: BugReport): Promise<boolean> {
-  if (!GITHUB_TOKEN) {
-    console.warn('GitHub token not configured');
-    return false;
-  }
-
-  try {
-    const body = `## 🐛 Rapport de Bug
-
-**👤 Rapporteur:** ${report.username}
-**📅 Date:** ${new Date(report.timestamp).toLocaleDateString('fr-FR')}
-**⚠️ Sévérité:** ${report.severite}
-
-### 📋 Détails
-- **Chantier:** ${report.chantier}
-- **Transporteur:** ${report.transporteur}
-- **Lieu:** ${report.lieu}
-- **Zone:** ${report.zone}
-- **Interface:** ${report.interface}
-- **Type:** ${report.typeBug}
-- **Fréquence:** ${report.frequence}
-- **Affecte autres:** ${report.affecteAutres}
-
-### 📝 Description
-${report.description}
-
-${report.moduleUI ? `### 🗂️ Module/Zone concernée\n${report.moduleUI}\n` : ''}
-
-${report.etapes.some(e => e.trim()) ? `### 🔧 Étapes pour reproduire\n${report.etapes.filter(e => e.trim()).map((e, i) => `${i + 1}. ${e}`).join('\n')}\n` : ''}
-
-${report.resultatAttendu ? `### ✓ Résultat attendu\n${report.resultatAttendu}\n` : ''}
-
-${report.resultatReel ? `### ✗ Résultat réel (le bug)\n${report.resultatReel}\n` : ''}
-
-${report.observations ? `### 📌 Observations\n${report.observations}` : ''}
-
----
-*ID: ${report.id}*`;
-
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/issues`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify({
-          title: `[${report.severite}] ${report.titre}`,
-          body: body,
-          labels: [report.severite, report.interface]
-        })
-      }
-    );
-
-    if (!response.ok) {
-      console.error('GitHub issue creation failed:', await response.text());
-      return false;
-    }
-
-    console.log('GitHub issue created successfully');
-    return true;
-  } catch (err) {
-    console.error('GitHub issue creation error:', err);
-    return false;
-  }
-}
+import React, { useState, useEffect, useRef } from 'react';
+import { fetchReports, saveReports, uploadPhoto, apiConfigured } from './api';
 
 interface BugReport {
   id: string;
@@ -196,62 +63,90 @@ const BugReportApp: React.FC = () => {
   const isAdmin = ['mAx', 'ThO', 'ProG'].includes(username);
   const isSuperAdmin = username === 'ProG';
 
-  // Load from localStorage
-  useEffect(() => {
-    const loadReports = async () => {
-      try {
-        const saved = localStorage.getItem('bugReports');
-        if (saved) {
-          const parsed: BugReport[] = JSON.parse(saved);
-          // Normalize old reports that may miss newer fields
-          const normalized = parsed.map(r => ({
-            ...r,
-            status: r.status || 'déclarer',
-            statusHistory: Array.isArray(r.statusHistory)
-              ? r.statusHistory
-              : [{ status: r.status || 'déclarer', timestamp: r.timestamp || new Date().toISOString() }],
-            etapes: Array.isArray(r.etapes) ? r.etapes : [],
-            closed: r.closed ?? false,
-          }));
-          setReports(normalized);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des rapports:', error);
-      }
-    };
+  // Refs to coordinate load/save: no saving before the first server load,
+  // debounce rapid edits, and skip writes that would echo back the same data.
+  const hasLoaded = useRef(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSaved = useRef('');
 
+  const normalizeReports = (parsed: BugReport[]): BugReport[] =>
+    parsed.map(r => ({
+      ...r,
+      status: r.status || 'déclarer',
+      statusHistory: Array.isArray(r.statusHistory)
+        ? r.statusHistory
+        : [{ status: r.status || 'déclarer', timestamp: r.timestamp || new Date().toISOString() }],
+      etapes: Array.isArray(r.etapes) ? r.etapes : [],
+      closed: r.closed ?? false,
+    }));
+
+  // Initial load: render local cache instantly, then refresh from the backend.
+  useEffect(() => {
     const savedUsername = localStorage.getItem('username');
     if (savedUsername) {
       setUsername(savedUsername);
       setUsernameSaved(true);
     }
 
-    loadReports();
-  }, []);
+    // 1) Instant render from local cache (offline-friendly)
+    try {
+      const saved = localStorage.getItem('bugReports');
+      if (saved) setReports(normalizeReports(JSON.parse(saved)));
+    } catch (error) {
+      console.error('Erreur lecture cache local:', error);
+    }
 
-  // Save to localStorage
-  useEffect(() => {
-    const saveReports = async () => {
-      localStorage.setItem('bugReports', JSON.stringify(reports));
-      
-      // Sync to GitHub if token is configured
-      if (GITHUB_TOKEN && reports.length > 0) {
-        setSyncStatus('syncing');
-        saveToGitHub(reports).then(success => {
-          if (success) {
-            setSyncStatus('success');
-            setSyncMessage('Synchronisé avec GitHub ✓');
-            setTimeout(() => setSyncStatus('idle'), 3000);
-          } else {
-            setSyncStatus('error');
-            setSyncMessage('Erreur de synchronisation');
-            setTimeout(() => setSyncStatus('idle'), 3000);
-          }
-        });
+    // 2) Authoritative refresh from the backend (source of truth)
+    const loadFromServer = async () => {
+      if (!apiConfigured) {
+        hasLoaded.current = true;
+        return;
+      }
+      setSyncStatus('syncing');
+      try {
+        const server = await fetchReports<BugReport>();
+        const normalized = normalizeReports(server);
+        lastSaved.current = JSON.stringify(normalized);
+        setReports(normalized);
+        localStorage.setItem('bugReports', lastSaved.current);
+        setSyncStatus('idle');
+      } catch (error) {
+        console.error('Erreur chargement serveur:', error);
+        setSyncStatus('error');
+        setSyncMessage('Hors ligne — données locales');
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      } finally {
+        hasLoaded.current = true;
       }
     };
+    loadFromServer();
+  }, []);
 
-    saveReports();
+  // Persist: local cache immediately, backend debounced (skips no-op echoes).
+  useEffect(() => {
+    const payload = JSON.stringify(reports);
+    localStorage.setItem('bugReports', payload);
+
+    if (!hasLoaded.current || !apiConfigured) return;
+    if (payload === lastSaved.current) return;
+
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      setSyncStatus('syncing');
+      saveReports(reports)
+        .then(() => {
+          lastSaved.current = payload;
+          setSyncStatus('success');
+          setSyncMessage('Synchronisé ✓');
+          setTimeout(() => setSyncStatus('idle'), 2000);
+        })
+        .catch(err => {
+          console.error('Erreur de synchronisation:', err);
+          setSyncStatus('error');
+          setSyncMessage('Erreur de synchronisation');
+          setTimeout(() => setSyncStatus('idle'), 3000);
+        });
+    }, 800);
   }, [reports]);
 
   const handleUsernameChange = (newUsername: string) => {
@@ -365,25 +260,18 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
     }
 
     setUploadingPhotos(true);
-    let photoBase64: string[] = [];
+    let photoUrls: string[] = [];
 
-    // Convert photos to Base64
+    // Upload photos to S3 (stored as files, only their URLs go in the report)
     if (photosToUpload.length > 0) {
       try {
         for (const file of photosToUpload) {
-          const reader = new FileReader();
-          await new Promise((resolve, reject) => {
-            reader.onload = () => {
-              photoBase64.push(reader.result as string);
-              resolve(null);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
+          const url = await uploadPhoto(file);
+          photoUrls.push(url);
         }
       } catch (error) {
-        console.error('Erreur lors de la conversion des photos:', error);
-        alert('Erreur lors de la conversion des photos');
+        console.error('Erreur lors de l’envoi des photos:', error);
+        alert('Erreur lors de l’envoi des photos. Vérifiez votre connexion.');
         setUploadingPhotos(false);
         return;
       }
@@ -391,7 +279,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
 
     if (isEditing && formData.id) {
       const updatedReports = reports.map(r => 
-        r.id === formData.id ? { ...r, ...formData as BugReport, photos: photoBase64.length > 0 ? photoBase64 : r.photos } : r
+        r.id === formData.id ? { ...r, ...formData as BugReport, photos: photoUrls.length > 0 ? photoUrls : r.photos } : r
       );
       setReports(updatedReports);
       setIsEditing(false);
@@ -417,28 +305,14 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
         frequence: formData.frequence as any,
         affecteAutres: formData.affecteAutres as any,
         observations: formData.observations || '',
-        photos: photoBase64,
+        photos: photoUrls,
         status: 'déclarer',
         statusHistory: [{ status: 'déclarer', timestamp: now }],
         closed: false
       };
 
-      // Add to local state
+      // Add to local state (persistence to backend handled by the save effect)
       setReports([newReport, ...reports]);
-
-      // Create GitHub Issue if token is configured
-      if (GITHUB_TOKEN) {
-        const success = await createGitHubIssue(newReport);
-        if (success) {
-          setSyncStatus('success');
-          setSyncMessage('Rapport créé et GitHub Issue générée ✓');
-          setTimeout(() => setSyncStatus('idle'), 3000);
-        } else {
-          setSyncStatus('error');
-          setSyncMessage('Rapport créé mais issue GitHub échouée');
-          setTimeout(() => setSyncStatus('idle'), 3000);
-        }
-      }
     }
     
     // Reset form
@@ -875,7 +749,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
             {/* Photos Upload */}
             <div style={{ marginBottom: '20px', backgroundColor: '#f0f7ff', padding: '15px', borderRadius: '4px', border: '2px dashed #0066cc' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>📸 Ajouter des photos (optionnel)</label>
-              <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#0066cc' }}>Les photos sont stockées localement dans votre navigateur</p>
+              <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#0066cc' }}>Les photos sont envoyées sur le cloud et partagées avec l'équipe</p>
               <input
                 type="file"
                 multiple
@@ -1213,7 +1087,7 @@ Chantier: ${report.chantier} | Transporteur: ${report.transporteur}
 
       {/* Footer */}
       <div style={{ backgroundColor: '#f5f5f5', padding: '20px', textAlign: 'center', color: '#999', fontSize: '12px', marginTop: '30px', borderTop: '1px solid #ddd' }}>
-        <p style={{ margin: '0' }}>💾 Les données sont sauvegardées sur le Claoud • 📱 Compatible tablette et PC</p>
+        <p style={{ margin: '0' }}>☁️ Données synchronisées sur le cloud (AWS) et partagées avec l'équipe • 📱 Compatible tablette et PC</p>
         {/* <p style={{ margin: '8px 0 0 0' }}>Admin: mAx, ThO</p> */}
       </div>
 
